@@ -1,0 +1,9 @@
+<%- @dev_keys.each do |key| %>
+<%= "#{ key }\r\n" %>
+<%- end %>
+<%- @deploy_keys_arr.each do |key| %>
+<%= "#{ key }\r\n" %>
+<%- end %>
+<%- @specific_dev_keys.each do |key| %>
+<%= "#{ key }\r\n" %>
+<%- end %>

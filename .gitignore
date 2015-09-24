@@ -1,0 +1,15 @@
+.vagrant
+*.lock
+*~
+*#
+.#*
+\#*#
+.*.sw[a-z]
+*.un~
+.bundle
+.cache
+.kitchen
+.librarian
+bin
+tmp
+.kitchen.local.yml

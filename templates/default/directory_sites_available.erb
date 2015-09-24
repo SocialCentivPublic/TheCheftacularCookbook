@@ -1,0 +1,8 @@
+server {
+    server_name <%= @name %>;
+    root <%= @base_directory %>;
+    access_log <%= @log_dir %>/<%= @name %>.access.log;
+    error_log <%= @log_dir %>/<%= @name %>.error.log;
+
+    index index.html;
+}

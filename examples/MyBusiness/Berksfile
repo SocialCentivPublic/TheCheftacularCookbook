@@ -1,0 +1,4 @@
+source 'https://api.berkshelf.com'
+metadata
+
+cookbook 'TheCheftacularCookbook', git: 'git@github.com:SocialCentivPublic/TheCheftacularCookbook.git'

@@ -1,0 +1,22 @@
+#these sets will trigger for the postgres resource regardless of where they're loaded in the run_list
+#git.postgresql.org/gitweb/?p=postgresql.git;a=blob_plain;f=src/backend/utils/misc/postgresql.conf.sample;h=a3880da7dac5d8ff55dc8f5f7a3f1fc8052627b0;hb=REL9_0_STABLE
+node.set['postgresql']['config']['log_destination']            = 'stderr'
+node.set['postgresql']['config']['logging_collector']          = 'on'
+node.set['postgresql']['config']['log_directory']              = '/var/log/postgresql'
+node.set['postgresql']['config']['log_filename']               = 'postgresql-%Y-%m-%d.log'
+node.set['postgresql']['config']['log_rotation_age']           = '1d'
+node.set['postgresql']['config']['client_min_messages']        = 'notice'
+node.set['postgresql']['config']['log_min_messages']           = 'warning'
+node.set['postgresql']['config']['log_min_error_statement']    = 'error'
+node.set['postgresql']['config']['log_min_duration_statement'] = '100'
+node.set['postgresql']['config']['log_rotation_size']          = '200MB' #max size is this
+node.set['postgresql']['config']['log_checkpoints']            = 'on'
+node.set['postgresql']['config']['log_connections']            = 'on'
+node.set['postgresql']['config']['log_disconnections']         = 'on'
+node.set['postgresql']['config']['log_duration']               = 'off'
+node.set['postgresql']['config']['log_error_verbosity']        = 'verbose'
+node.set['postgresql']['config']['log_hostname']               = 'on'
+node.set['postgresql']['config']['log_line_prefix']            = '%t [%p]: [%l-1] db=%d,user=%u '
+node.set['postgresql']['config']['log_lock_waits']             = 'on'
+node.set['postgresql']['config']['log_statement']              = 'none'
+node.set['postgresql']['config']['log_temp_files']             = '0'

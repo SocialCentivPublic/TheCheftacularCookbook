@@ -1,0 +1,45 @@
+# /etc/init/<%= @file_name %> <%= @command %> config
+
+# This example config should work with Ubuntu 12.04+. It
+# uses
+# Upstart, Ubuntu's native service management tool.
+#
+# Save this config as /etc/init/<%= @file_name %> then manage <%= @command %> with:
+# sudo start <%= @file_name.gsub('.conf','') %> app=PATH_TO_APP
+# sudo stop <%= @file_name.gsub('.conf','') %>  app=PATH_TO_APP
+# sudo status <%= @file_name.gsub('.conf','') %>  app=PATH_TO_APP
+#
+
+description "<%= @command %> background process"
+
+start on runlevel [2345]
+stop on runlevel [06]
+
+# change apps to match your deployment user if you want to use this as a less privileged user (recommended!)
+setuid <%= @user %>
+setgid <%= @user %>
+
+respawn
+respawn limit 3 30
+
+script
+# this script runs in /bin/sh by default
+# respawn as bash so we can source in rbenv/rvm
+# quoted heredoc to tell /bin/sh not to interpret
+# variables
+exec /bin/bash <<'EOT'
+  # set HOME to the setuid user's home, there doesn't seem to be a better, portable way
+  export HOME="$(eval echo ~$(id -un))"
+
+  cd <%= @app_loc %>
+
+<%- if @env_vars %> 
+<%- @env_vars.each do |var| %>
+  <%= "export #{ var }" %>
+<%- end %>
+<%- end %>
+
+  exec <%= @command %> <%= '2>&1' %> | logger -t <%= @logger %>
+
+EOT
+end script

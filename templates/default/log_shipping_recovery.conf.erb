@@ -1,0 +1,4 @@
+primary_conninfo = 'host=<%= @master_ip_address %> port=5432 user=rep password=<%= @replication_password %>'
+restore_command = 'cp <%= @filesystem_pg_backup_location%>/%f %p'
+archive_cleanup_command = 'pg_archivecleanup <%= @filesystem_pg_backup_location %> %r'
+trigger_file = '/tmp/postgresql.trigger.5432'
