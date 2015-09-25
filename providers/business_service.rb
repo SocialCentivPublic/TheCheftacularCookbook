@@ -28,7 +28,7 @@ def initialize_rails_service
     group  node['root_group']
     mode   '0644'
     variables(
-      user:           node['cheftacular']['deploy_user']
+      user:           node['cheftacular']['deploy_user'],
       file_name:      "#{ application_service_name }.conf",
       command:        new_resource.task,
       app_loc:        node[new_resource.application_name]["current_path"],

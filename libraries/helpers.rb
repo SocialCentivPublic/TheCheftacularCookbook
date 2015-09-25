@@ -97,8 +97,7 @@ class Chef
     end
 
     def role_has_service_name? app_role_name, service_name
-      node['cheftacular']['repositories'][app_role_name].has_key?('application_tasks') &&
-        node['cheftacular']['repositories'][app_role_name]['application_tasks'].has_key?(service_name)
+      repo_hash(app_role_name).has_key?('application_tasks') && repo_hash(app_role_name)['application_tasks'].has_key?(service_name)
     end
 
     def extract_delayed_job_services app_role_name, return_array=[]
@@ -125,7 +124,7 @@ class Chef
         query_subscribers          << handler_name if handler_hash['mode'].include?('query_subscribers')
       end
 
-      infrastructure_subscribers, critical_subscribers, deployment_subscribers, ci_subscribers, query_subscribers
+      [infrastructure_subscribers, critical_subscribers, deployment_subscribers, ci_subscribers, query_subscribers]
     end
 
     def parse_queues_into_env_var_from_service task_hash, queue_arr=[]

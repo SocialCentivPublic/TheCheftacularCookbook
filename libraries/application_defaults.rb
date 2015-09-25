@@ -4,17 +4,12 @@ class Chef
       #find the db_master's data
 
       configs  = data_bag_item( node.chef_environment, 'config').to_hash[node['environment_name']]
-      revision = configs['app_revisions'].has_key?(name) ? configs['app_revisions'][name] : configs['default_revision']
-      revision = nil if revision == '<use_default>' #TODO refactor
+      revision = configs['app_revisions'].has_key?(name) ? configs['app_revisions'][name] : nil
+      revision = nil if revision == '<use_default>'
 
-      revision = case
-                 when revision.nil? && node.chef_environment == 'devstaging'  then 'devstaging'
-                 when revision.nil? && node.chef_environment == 'staging'     then 'staging'
-                 when revision.nil? && node.chef_environment == 'production'  then 'master'
-                 when revision.nil? && node.chef_environment == 'test'        then 'devstaging'
-                 when revision.nil? && node.chef_environment == 'datastaging' then 'master'
-                 when revision.nil? && !node[name]['repo_branch'].nil?        then node[name]['repo_branch']
-                 end
+      node['TheCheftacularCookbook']['chef_environment_to_app_environment_mappings'].each_pair do |chef_env, app_env|
+        revision = app_env if node.chef_environment == chef_env && revision.nil?
+      end
 
       node.set[name]['repo_branch']           = revision #set this so the above checks work
       ret_hash["path"]                        = node['base_application_location'] + "/#{ name }"

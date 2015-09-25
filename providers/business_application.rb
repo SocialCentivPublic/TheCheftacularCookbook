@@ -37,7 +37,7 @@ def initialize_lamp_application
     include_recipe "wordpress"
   end
 
-  next if node['skip_deploys'] == true
+  return true if node['skip_deploys'] == true
 
   application new_resource.name do
     path              app_hash['path']
@@ -176,7 +176,7 @@ def initialize_nodejs_application
     group  node['root_group']
     mode   '0644'
     variables(
-      user:           node['cheftacular']['deploy_user']
+      user:           node['cheftacular']['deploy_user'],
       file_name:      "#{ new_resource.name }.conf",
       command:        execute_command,
       app_loc:        app_hash["current_path"],
@@ -189,17 +189,16 @@ def initialize_nodejs_application
     end
   end
 
+  service "#{ new_resource.name }-server" do
+    provider Chef::Provider::Service::Upstart
+    supports enable: true, start: true, status: true, restart: true
+    action [:start, :enable]
+  end
+
+  if ::File.exists?("/etc/init/#{ new_resource.name }-server.conf")
     service "#{ new_resource.name }-server" do
       provider Chef::Provider::Service::Upstart
-      supports enable: true, start: true, status: true, restart: true
-      action [:start, :enable]
-    end
-
-    if ::File.exists?("/etc/init/#{ new_resource.name }-server.conf")
-      service "#{ new_resource.name }-server" do
-        provider Chef::Provider::Service::Upstart
-        action :restart
-      end
+      action :restart
     end
   end
 end
@@ -213,7 +212,7 @@ def initialize_rails_application
     ruby_string node['rvm']['default_ruby']
   end
 
-  next if node['skip_deploys'] == true
+  return true if node['skip_deploys'] == true
 
   application new_resource.name do
     path              app_hash['path']
@@ -368,4 +367,3 @@ def post_application_linking mode, app_hash={}
 
   execute "chown -R #{ node['cheftacular']['deploy_user'] }:www-data #{ app_hash['path'] }" unless mode =~ /wordpress/
 end
-
