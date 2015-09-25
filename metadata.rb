@@ -13,9 +13,6 @@ depends 'redisio'
 depends 'sidekiq'
 depends 'haproxy'
 depends 'apt'
-depends 'rabbitmq'
-depends 'jenkins'
-#depends 'jenkins-chef-dsl'
 depends 'postfix'
 depends 'nodejs'
 depends 'sensu'
@@ -39,10 +36,6 @@ depends 'mysql', '< 6.0.0'
 depends 'mysql-chef_gem', '< 1.0.0'
 depends 'apache2', '< 3.0.0'
 depends 'wordpress'
-
-#BI Cookbooks
-depends 'pentaho'
-depends 'tomcat'
 
 #Rails cookbooks
 depends 'application_ruby'
