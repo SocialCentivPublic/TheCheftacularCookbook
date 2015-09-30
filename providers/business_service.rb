@@ -1,4 +1,5 @@
 include Chef::DSL::IncludeRecipe
+include ::TheCheftacularCookbook::Helper
 
 use_inline_resources if defined?(use_inline_resources)
 

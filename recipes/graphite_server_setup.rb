@@ -58,7 +58,7 @@ node['TheCheftacularCookbook']['graphite']['storage_schemas'].each_pair do |sche
       })
     end
   end
-end
+end if node['TheCheftacularCookbook']['graphite'].has_key?('storage_schemas')
 
 graphite_service "cache"
 

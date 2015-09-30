@@ -1,9 +1,10 @@
 include Chef::DSL::IncludeRecipe
+include ::TheCheftacularCookbook::Helper
 
 use_inline_resources if defined?(use_inline_resources)
 
 action :create do
-  mount_directory   = "/mnt/#{ new_resource.primary_directory }"
+  mount_directory   = new_resource.primary_directory
   cloud_conditional = case node['cloud']
                       when 'rackspace'    then 'cat /proc/mounts | grep #{ mount_directory }'
                       when 'digitalocean' then '' #TODO REFACTOR TO BETTER SOLUTION THAT CHECKS NODE STATE
@@ -41,7 +42,7 @@ action :create do
 
   new_resource.sub_directories.each_pair do |dirpath, dir_hash|
     if dir_hash.has_key?('not_if')
-      directory dirpath do
+      directory "#{ mount_directory }/#{ dirpath }" do
         user      dir_hash.has_key?('user') ? dir_hash['user'] : node['cheftacular']['deploy_user']
         group     dir_hash.has_key?('group') ? dir_hash['group'] : node['cheftacular']['deploy_user']
         mode      dir_hash.has_key?('mode') ? dir_hash['mode'] : '700'
@@ -49,7 +50,7 @@ action :create do
         not_if    dir_hash['not_if']
       end
     elsif dir_hash.has_key?('only_if')
-      directory dirpath do
+      directory "#{ mount_directory }/#{ dirpath }" do
         user      dir_hash.has_key?('user') ? dir_hash['user'] : node['cheftacular']['deploy_user']
         group     dir_hash.has_key?('group') ? dir_hash['group'] : node['cheftacular']['deploy_user']
         mode      dir_hash.has_key?('mode') ? dir_hash['mode'] : '700'
@@ -57,7 +58,7 @@ action :create do
         only_if   dir_hash['only_if']
       end
     else
-      directory dirpath do
+      directory "#{ mount_directory }/#{ dirpath }" do
         user      dir_hash.has_key?('user') ? dir_hash['user'] : node['cheftacular']['deploy_user']
         group     dir_hash.has_key?('group') ? dir_hash['group'] : node['cheftacular']['deploy_user']
         mode      dir_hash.has_key?('mode') ? dir_hash['mode'] : '700'

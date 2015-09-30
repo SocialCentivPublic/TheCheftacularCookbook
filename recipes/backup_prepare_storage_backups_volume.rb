@@ -7,7 +7,7 @@ sub_directories_hash = {
   "#{ node['main_backup_location'] }/main_backup" => { mode: '777', recursive: true }
 }
 
-business_volume mount_name do
+TheCheftacularCookbook_business_volume mount_name do
   primary_directory "/mnt/backupmaster"
   sub_directories sub_directories_hash
 

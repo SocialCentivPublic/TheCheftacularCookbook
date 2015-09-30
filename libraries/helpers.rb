@@ -1,6 +1,5 @@
-
-class Chef
-  class Recipe
+module TheCheftacularCookbook
+  module Helper
     def chef_version
       node['chef_packages']['chef']['version']
     end
@@ -82,10 +81,12 @@ class Chef
 
         database_master_hash = serv_hash
       end
+
+      database_master_hash
     end
 
     def repo_hash app_role_name
-      node['cheftacular']['repositories'][app_role_name]
+      node['cheftacular']['repositories'][app_role_name].to_hash
     end
 
     def has_repo_hash? app_role_name

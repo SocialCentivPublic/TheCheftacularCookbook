@@ -56,34 +56,3 @@ end
 service "postgresql" do
   action :restart
 end
-
-=begin
-node.set_unless['setup_slaves'] = {}
-
-db_slaves.each do |slave_hash|
-  unless node['setup_slaves'][slave_hash['address']]
-
-    postgresql_database 'start_replication_backup' do
-      connection node['postgres_connection_info']
-      sql        "pg_start_backup('initial_backup');"
-      action     :query
-    end
-
-    target_dir_arr = node['postgresql']['config']['data_directory'].split('/')
-    target_dir = target_dir_arr[0..(target_dir_arr.length-2)].join('/')
-
-    execute "start_replication" do
-      user    "postgres"
-      command "rsync -cva --inplace --exclude=*pg_xlog* #{ node['postgresql']['config']['data_directory'] } #{ slave_hash['address'] }:#{ target_dir }"
-    end
-
-    postgresql_database 'stop_replication_backup' do
-      connection node['postgres_connection_info']
-      sql        "select pg_stop_backup();"
-      action     :query
-    end
-
-    node.set['setup_slaves'][slave_hash['address']] = true
-  end
-end
-=end

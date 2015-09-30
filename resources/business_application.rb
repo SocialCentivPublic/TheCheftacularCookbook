@@ -1,3 +1,6 @@
+
+include ApplicationCookbook::ResourceBase
+
 actions :create, :destroy
 default_action :create
 

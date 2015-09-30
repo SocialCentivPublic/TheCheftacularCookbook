@@ -8,6 +8,7 @@ tld = data_bag_item( node.chef_environment, 'config').to_hash[node['environment_
 #TODO fix when working in staging
 node.set['haproxy']['enable_default_http'] = !node['roles'].include?('https')
 node.set['haproxy']['ssl_termination']     = node['roles'].include?('https')
+node.set['haproxy']['x_forwarded_for']     = true
 
 if node['roles'].include?('https')
   user "haproxy" do
@@ -58,7 +59,7 @@ special_env = case
 
 node['loaded_applications'].each_key do |app_role_name|
   node['addresses'][node.chef_environment].each do |serv_hash|
-    next unless serv_hash['descriptor'] == "lb:#{ node['cheftacular']['repositories'][app_role_name]['repo_name'] }#{ special_env }"
+    next unless serv_hash['descriptor'] == "lb:#{ repo_hash(app_role_name)['repo_name'] }#{ special_env }"
 
     server_arr.push({
       'hostname' => serv_hash['name'],
@@ -71,13 +72,13 @@ end
 
 #TODO REFACTOR
 node['addresses'][node.chef_environment].each do |serv_hash|
-  target_server, statement = {}, ""
+  target_server, statement = {}, []
 
   node['TheCheftacularCookbook']['haproxy']['role_to_node_name_routing'].each_pair do |role_name, node_name|
     statement << "(node['roles'].include?(#{ role_name }) && serv_hash['name'] == #{ node_name })"
-  end
+  end if node['TheCheftacularCookbook']['haproxy'].has_key?('role_to_node_name_routing')
 
-  if eval(statement.join(' || '))
+  if Chef::Recipe.instance_eval(statement.join(' || '))
     target_server = { hostname: serv_hash['name'], ipaddress: serv_hash['address'] }
   else
     next

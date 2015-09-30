@@ -56,7 +56,7 @@ user_hashes.each_pair do |username, config_hash|
     end
   end
 
-  node['applications'].each_key do |app_name|
+  node['loaded_applications'].each_key do |app_name|
     if authentication_bag_hash['specific_repository_authorized_keys'].has_key?(app_name) && !authentication_bag_hash['specific_repository_authorized_keys'][app_name].empty?
       specific_keys_arr << authentication_bag_hash['specific_repository_authorized_keys'][app_name]
     end
