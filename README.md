@@ -39,11 +39,7 @@ Note: The list is ENVIRONMENT -> bag, you can see the contents of any data bag w
 
         1.  Stores useful password data like the default environment postgres password and the default mysql password.
 
-    3.  config
-
-        1.  The config bag holds the key building blocks for the environment. It holds the server's tld as well as default repo revision and special revisions set for individual codebases
-
-    4.  environment_config
+    3.  environment_config
 
         1.  Stores the environments currently setup on the chef server and the databags each environment currently has available
 
@@ -53,11 +49,15 @@ Note: The list is ENVIRONMENT -> bag, you can see the contents of any data bag w
 
         1.  Stores key data for the node's domain names and some other info the chef-server doesn't automatically store (like the node's private ip-address)
 
-    2.  logs
+    2.  config
 
-        1.  Stores logging data from various runs on the server so they can be fetched by a different user without checking the original user's computer manually.
+        1.  The config bag holds the key building blocks for the environment. It holds the server's tld as well as default repo revision and special revisions set for individual codebases
 
-    3.  server_passwords (encrypted)
+    3.  logs
+
+        1.  Stores logging data from various runs on the server so they can be fetched by a different user without checking the original user's computer manually. This bag will store the *entire* log output of a failed run on a node, but no data for successful runs.
+
+    4.  server_passwords (encrypted)
 
         1.  Stores the initial root password, the deploy user sudo password, and the name for each server in the environment.
 
