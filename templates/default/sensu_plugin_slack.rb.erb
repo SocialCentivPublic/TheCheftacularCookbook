@@ -54,7 +54,7 @@ class Slack < Sensu::Handler
   end
 
   def get_setting(name)
-    settings[<%= @snippet_root %>][name]
+    settings['<%= @snippet_root %>'][name]
   end
 
   def handle

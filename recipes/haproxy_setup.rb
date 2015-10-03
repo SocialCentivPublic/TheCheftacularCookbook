@@ -75,10 +75,10 @@ node['addresses'][node.chef_environment].each do |serv_hash|
   target_server, statement = {}, []
 
   node['TheCheftacularCookbook']['haproxy']['role_to_node_name_routing'].each_pair do |role_name, node_name|
-    statement << "(node['roles'].include?(#{ role_name }) && serv_hash['name'] == #{ node_name })"
+    statement << "(node['roles'].include?('#{ role_name }') && serv_hash['name'] == '#{ node_name }')"
   end if node['TheCheftacularCookbook']['haproxy'].has_key?('role_to_node_name_routing')
 
-  if Chef::Recipe.instance_eval(statement.join(' || '))
+  if self.instance_eval(statement.join(' || '))
     target_server = { hostname: serv_hash['name'], ipaddress: serv_hash['address'] }
   else
     next

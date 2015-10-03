@@ -15,7 +15,7 @@ action :destroy do
     only_if { ::File.exists?("/etc/init/#{ application_service_name }.conf") }
   end
 
-  execute "rm /etc/init/#{ name }.conf" do
+  execute "rm /etc/init/#{ application_service_name }.conf" do
     only_if { ::File.exists?("/etc/init/#{ application_service_name }.conf") }
   end
 end

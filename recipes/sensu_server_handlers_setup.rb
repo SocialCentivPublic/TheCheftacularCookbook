@@ -15,7 +15,7 @@ node['TheCheftacularCookbook']['sensu']['slack_handlers'].each_pair do |handler_
   end
 
   template "/etc/sensu/handlers/#{ handler_name }.rb" do
-    source 'sensu_plugin_slack.erb'
+    source 'sensu_plugin_slack.rb.erb'
     owner  'sensu'
     group  'sensu'
     mode   '0755'

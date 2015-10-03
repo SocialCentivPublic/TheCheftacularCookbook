@@ -17,10 +17,10 @@ node['loaded_applications'].each_key do |app_role_name|
       type                    repo_hash['stack']
       application_name        repo_hash['repo_name']
       task                    task_hash['command']
-      environment_vars        env_vars.flatten.join(' ')
-      application_log_cleanup task_hash.has_key('application_log_cleanup')
-      delayedjob_log_cleanup  task_hash.has_key('delayedjob_log_cleanup')
-      syslog_cleanup          task_hash.has_key('syslog_cleanup')
+      environment_vars        env_vars.flatten
+      application_log_cleanup task_hash.has_key?('application_log_cleanup')
+      delayedjob_log_cleanup  task_hash.has_key?('delayedjob_log_cleanup')
+      syslog_cleanup          task_hash.has_key?('syslog_cleanup')
     end
   end
 end

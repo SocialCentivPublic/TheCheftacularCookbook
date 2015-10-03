@@ -286,10 +286,10 @@ def initialize_rails_application
 end
 
 def initialize_wordpress_application
-  node.set['mysql']['server_root_password'] = Chef::EncryptedDataBagItem.load(node.chef_environment,"chef_passwords", secret)['mysql_root_pass']
+  node.set['mysql']['server_root_password'] = Chef::EncryptedDataBagItem.load(node.chef_environment,"chef_passwords", node['secret'])['mysql_root_pass']
   node.set['wordpress']['db']['name']       = repo_hash(new_resource.role_name)['application_database_user']
   node.set['wordpress']['db']['user']       = node['wordpress']['db']['name']
-  node.set['wordpress']['db']['pass']       = Chef::EncryptedDataBagItem.load(node.chef_environment,"chef_passwords", secret)['mysql_app_pass']
+  node.set['wordpress']['db']['pass']       = Chef::EncryptedDataBagItem.load(node.chef_environment,"chef_passwords", node['secret'])['mysql_app_pass']
   node.set['wordpress']['db']['host']       = 'localhost'
   node.set['wordpress']['allow_multisite']  = false
 

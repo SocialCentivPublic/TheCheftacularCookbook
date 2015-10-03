@@ -25,7 +25,7 @@ module TheCheftacularCookbook
       ret_hash["repo_branch"]                 = revision
       ret_hash['repo_group']                  = org_name.nil? ? node['TheCheftacularCookbook']['organization_name'] : org_name
       node.set[name]['repo_group']            = ret_hash['repo_group']
-      ret_hash['pg_connection']               = true if mode =~ /ruby_on_rails/
+      ret_hash['pg_connection']               = true if repo_hash(role_name)['database'] == 'postgresql'
       ret_hash["server_url"]                  = node_address_hash['dn']
       ret_hash['database_master']             = database_master_to_hash
       ret_hash['key_data']                    = Chef::EncryptedDataBagItem.load( 'default', 'authentication', node['secret']).to_hash
@@ -37,7 +37,7 @@ module TheCheftacularCookbook
       ret_hash['is_sensu_build']              = node['roles'].include?('sensu_build_db')
       ret_hash['db_user']                     = repo_hash(role_name)['application_database_user'] if repo_hash(role_name).has_key?('application_database_users')
       ret_hash['db_environment']              = node['environment_name']
-      ret_hash['db_name']                     = name
+      ret_hash['db_name']                     = repo_hash(role_name).has_key?('use_other_repo_database') ? repo_hash(role_name)['use_other_repo_database'] : name
       ret_hash['db_attrs']                    = {}
       ret_hash['db_attrs']['template']        = 'template0' if node['roles'].include?('sensu_build_db')
       ret_hash['syms']                        = {}

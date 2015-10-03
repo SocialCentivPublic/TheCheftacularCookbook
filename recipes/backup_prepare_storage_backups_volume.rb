@@ -3,8 +3,8 @@ mount_name  = "#{ node['hostname'].gsub('-','_') }_main_backup_storage"
 volume_hash = node['TheCheftacularCookbook']['volume_config']['backup_server']
 
 sub_directories_hash = {
-  "#{ node['main_backup_location'] }" => { mode: '777', recursive: true },
-  "#{ node['main_backup_location'] }/main_backup" => { mode: '777', recursive: true }
+  "backups"             => { mode: '777', recursive: true },
+  "backups/main_backup" => { mode: '777', recursive: true }
 }
 
 TheCheftacularCookbook_business_volume mount_name do
