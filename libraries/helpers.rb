@@ -1,6 +1,5 @@
-
-class Chef
-  class Recipe
+module TheCheftacularCookbook
+  module Helper
     def chef_version
       node['chef_packages']['chef']['version']
     end
@@ -61,8 +60,8 @@ class Chef
     end
 
     def get_current_applications mode='array', ret_hash={}
-      node['loaded_applications'].each do |app_role_name|
-        ret_hash[repo_hash[app_role_name]['repo_name']] = repo_hash[app_role_name]
+      node['loaded_applications'].each_key do |app_role_name|
+        ret_hash[repo_hash(app_role_name)['repo_name']] = repo_hash(app_role_name)
       end
 
       case mode
@@ -82,23 +81,24 @@ class Chef
 
         database_master_hash = serv_hash
       end
+
+      database_master_hash
     end
 
     def repo_hash app_role_name
-      node['cheftacular']['repositories'][app_role_name]
+      node['cheftacular']['repositories'][app_role_name].to_hash
     end
 
     def has_repo_hash? app_role_name
       node['cheftacular']['repositories'].has_key?(app_role_name)
     end
 
-    def current_application_location app_role_name
-      node['base_application_location'] + '/' + repo_hash(app_role_name)['repo_name']
+    def current_application_location app_role_name, append_string=''
+      node['base_application_location'] + '/' + repo_hash(app_role_name)['repo_name'] + '/current' + append_string
     end
 
     def role_has_service_name? app_role_name, service_name
-      node['cheftacular']['repositories'][app_role_name].has_key?('application_tasks') &&
-        node['cheftacular']['repositories'][app_role_name]['application_tasks'].has_key?(service_name)
+      repo_hash(app_role_name).has_key?('application_tasks') && repo_hash(app_role_name)['application_tasks'].has_key?(service_name)
     end
 
     def extract_delayed_job_services app_role_name, return_array=[]
@@ -111,21 +111,17 @@ class Chef
       return_array
     end
 
-    def get_current_path app_role_name, append_string=''
-      node['base_file_path'] + '/' + repo_hash[app_role_name]['repo_name'] + '/current' + append_string
-    end
-
     #general-infrastructure|critical|deployment|continuous-integration|slow-queries
-    def get_slack_handler_names infrastructure_subscribers=[], critical_subscribers=[], deployment_subscribers=[], ci_subscribers=[], query_subscribers=[]
+    def get_slack_handler_names infrastructure_handlers=[], critical_handlers=[], deployment_handlers=[], ci_handlers=[], query_handlers=[]
       node['TheCheftacularCookbook']['sensu']['slack_handlers'].each_pair do |handler_name, handler_hash|
-        infrastructure_subscribers << handler_name if handler_hash['mode'].include?('general-infrastructure')
-        critical_subscribers       << handler_name if handler_hash['mode'].include?('critical_subscribers')
-        deployment_subscribers     << handler_name if handler_hash['mode'].include?('deployment_subscribers')
-        ci_subscribers             << handler_name if handler_hash['mode'].include?('ci_subscribers')
-        query_subscribers          << handler_name if handler_hash['mode'].include?('query_subscribers')
+        infrastructure_handlers << handler_name if handler_hash['modes'].include?('general-infrastructure')
+        critical_handlers       << handler_name if handler_hash['modes'].include?('critical')
+        deployment_handlers     << handler_name if handler_hash['modes'].include?('deployment')
+        ci_handlers             << handler_name if handler_hash['modes'].include?('continuous-integration')
+        query_handlers          << handler_name if handler_hash['modes'].include?('slow-queries')
       end
 
-      infrastructure_subscribers, critical_subscribers, deployment_subscribers, ci_subscribers, query_subscribers
+      [infrastructure_handlers, critical_handlers, deployment_handlers, ci_handlers, query_handlers]
     end
 
     def parse_queues_into_env_var_from_service task_hash, queue_arr=[]
@@ -135,9 +131,19 @@ class Chef
         queue_arr << task_hash['queues'][node['environment_name']]
       end
       
-      queue_arr = node['environment_name'] if node['TheCheftacularCookbook']['override_delayed_job_queues_on_split_environments']
+      if node['TheCheftacularCookbook']['override_delayed_job_queues_on_split_environments'] && environment_name_is_split_env?
+        queue_arr = [node['environment_name']]
+      end
 
       "QUEUES=#{ queue_arr.flatten.join(',') }"
+    end
+
+    def environment_name_is_split_env?
+      node['cheftacular']['run_list_environments'][node.chef_environment].each_pair do |role_name, env_name|
+        return true if node['roles'].include?(role_name)
+      end
+
+      false
     end
   end
 end

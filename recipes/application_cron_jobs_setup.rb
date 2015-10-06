@@ -11,7 +11,7 @@ node['loaded_applications'].each_key do |app_role_name|
                    when 'raw'  then "#{ cron_hash['command'] }"
                    end
 
-    true_command = true_command.gsub('CURRENT_PATH', repo_hash(app_role_name)['current_path']).gsub('CURRENT_ENVIRONMENT', node['environment_name'])
+    true_command = true_command.gsub('CURRENT_PATH', current_application_location(app_role_name)).gsub('CURRENT_ENVIRONMENT', node['environment_name'])
 
     cron cron_name do
       minute   cron_hash['minute']

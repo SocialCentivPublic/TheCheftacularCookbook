@@ -1,5 +1,8 @@
 #Include recipes that should be run on EVERY system here
 
+::Chef::Recipe.send(:include, TheCheftacularCookbook::Helper)
+
+node.set['rvm']['default_ruby']              = "ruby-#{ node['desired_ruby'] }"
 node.set['addresses'][node.chef_environment] = data_bag_item(node.chef_environment, 'addresses')['addresses']
 
 include_recipe "TheCheftacularCookbook::setup_iptables"

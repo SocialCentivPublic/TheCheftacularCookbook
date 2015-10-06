@@ -18,8 +18,7 @@ schema_commands = [
   "DROP SCHEMA public CASCADE;",
   "CREATE SCHEMA public;",
   "GRANT ALL ON SCHEMA public TO postgres;",
-  "GRANT ALL ON SCHEMA public TO public;",
-  "COMMENT ON SCHEMA public IS \\\'standard public schema\\\';"
+  "GRANT ALL ON SCHEMA public TO public;"
 ]
 
 Dir.foreach("#{ backup_location }/main_backup") do |timestamp_dir|
@@ -58,7 +57,7 @@ Dir.foreach("#{ backup_location }/main_backup/#{ target_dir }/main_backup/databa
 
   puts "[#{ Time.now.strftime('%Y-%m-%d %l:%M:%S %P') }] Starting schema removal for #{ target_database }"
   schema_commands.each do |cmnd|
-    puts `psql #{ target_database }_#{ environment } -c '#{ cmnd }'`
+    puts `su - postgres -c "psql #{ target_database }_#{ environment } -c '#{ cmnd }'"`
   end
 
   (0..10).each do |tries|
@@ -78,7 +77,7 @@ Dir.foreach("#{ backup_location }/main_backup/#{ target_dir }/main_backup/databa
   `PGPASSWORD=#{ pg_pass } pg_restore --verbose --no-acl --no-owner -j 4 -h localhost -U #{ db_user } -d #{ target_database }_#{ environment } #{ backup_location }/main_backup/#{ target_dir }/main_backup/databases/#{ gzipped_sql_file.gsub('.gz','') }`   
 
   puts "[#{ Time.now.strftime('%Y-%m-%d %l:%M:%S %P') }] Starting VACUUM ANALYZE for #{ target_database }"
-  puts `psql #{ target_database }_#{ environment } -c 'VACUUM VERBOSE ANALYZE;'`
+  puts `su - postgres -c "psql #{ target_database }_#{ environment } -c 'VACUUM VERBOSE ANALYZE;'"`
 
 end
 

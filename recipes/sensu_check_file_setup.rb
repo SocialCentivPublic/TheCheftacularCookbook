@@ -51,7 +51,6 @@ file_plugin_arr = [
   { name: 'check-chef-client.rb',                 location: 'thecheftacularcookbook' },
   { name: 'check-test-suite.rb',                  location: 'thecheftacularcookbook' },
   { name: 'check-haproxy.rb',                     location: 'thecheftacularcookbook' },
-  { name: 'check-jobs.rb',                        location: 'thecheftacularcookbook' },
   { name: 'check-rails-web.rb',                   location: 'thecheftacularcookbook' },
   { name: 'check-tail.rb',                        location: 'thecheftacularcookbook' },
   { name: 'cpu-pcnt-usage-metrics.rb',            location: 'thecheftacularcookbook' },
@@ -70,15 +69,15 @@ node['TheCheftacularCookbook']['sensu']['custom_checks'].each_pair do |name, dat
 end
 
 file_plugin_arr.each do |plugin_hash|
-  cookbook_file "/etc/sensu/plugins/#{ file_name }" do
-    source   "sensu/plugins/#{ plugin_hash[:location] }/#{ file_name }"
+  cookbook_file "/etc/sensu/plugins/#{ plugin_hash[:name] }" do
+    source   "sensu/plugins/#{ plugin_hash[:location] }/#{ plugin_hash[:name] }"
     owner    'sensu'
     group    'sensu'
     mode     '0755'
     cookbook (plugin_hash.has_key?(:cookbook) ? plugin_hash[:cookbook] : 'TheCheftacularCookbook')
   end
 
-  sudo_commands << "/etc/sensu/plugins/#{ file_name }"
+  sudo_commands << "/etc/sensu/plugins/#{ plugin_hash[:name] }"
 end
 
 sudo_commands << "/etc/sensu/handlers/chef_node.rb"

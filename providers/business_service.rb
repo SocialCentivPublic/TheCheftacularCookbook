@@ -1,4 +1,5 @@
 include Chef::DSL::IncludeRecipe
+include ::TheCheftacularCookbook::Helper
 
 use_inline_resources if defined?(use_inline_resources)
 
@@ -14,7 +15,7 @@ action :destroy do
     only_if { ::File.exists?("/etc/init/#{ application_service_name }.conf") }
   end
 
-  execute "rm /etc/init/#{ name }.conf" do
+  execute "rm /etc/init/#{ application_service_name }.conf" do
     only_if { ::File.exists?("/etc/init/#{ application_service_name }.conf") }
   end
 end
@@ -28,7 +29,7 @@ def initialize_rails_service
     group  node['root_group']
     mode   '0644'
     variables(
-      user:           node['cheftacular']['deploy_user']
+      user:           node['cheftacular']['deploy_user'],
       file_name:      "#{ application_service_name }.conf",
       command:        new_resource.task,
       app_loc:        node[new_resource.application_name]["current_path"],

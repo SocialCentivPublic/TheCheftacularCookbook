@@ -15,7 +15,7 @@ if data_bag_item( node.chef_environment, 'config').to_hash[node['environment_nam
     next unless has_repo_hash?(app_role_name)
     next unless repo_hash(app_role_name)['database'] == 'postgresql'
 
-    cron_commands << "cd #{ current_application_location(app_role_name) }/current && RAILS_ENV=#{ node['environment_name'] } bundle exec rake db:migrate"
+    cron_commands << "cd #{ current_application_location(app_role_name) } && RAILS_ENV=#{ node['environment_name'] } bundle exec rake db:migrate"
   end
 
   cron "restore_from_production_database" do
