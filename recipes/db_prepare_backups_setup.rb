@@ -31,7 +31,6 @@ node['loaded_applications'].each do |app_role_name|
     end
 
     "
-  end
 end
 
 backup_nodes.each do |serv_hash|

@@ -1,9 +1,10 @@
 
 cookbook_file "/root/cheftacular.yml" do
-  source 'cheftacular.yml'
-  owner  'root'
-  group  'root'
-  mode   '0755'
+  source   'cheftacular.yml'
+  owner    'root'
+  group    'root'
+  mode     '0755'
+  cookbook node['TheCheftacularCookbook']['sensu']['cheftacular_yml_cookbook']
 end
 
 node['TheCheftacularCookbook']['sensu']['crons'].each_pair do |cron_name, cron_hash|
@@ -14,5 +15,6 @@ node['TheCheftacularCookbook']['sensu']['crons'].each_pair do |cron_name, cron_h
     hour    cron_hash['hour']
     user    'root'
     command command
+    action  (cron_hash.has_key?('active') && !cron_hash['active'] ? :delete : :create)
   end
 end

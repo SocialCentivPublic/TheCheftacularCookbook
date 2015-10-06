@@ -12,7 +12,7 @@ node['TheCheftacularCookbook']['sensu_build']['repository_role_names'].each_pair
   next unless repo_hash(app_role_name)['stack']    == 'rails'
 
   settings_hash['branches_to_test'].each do |branch|
-    base_command = "cd #{ get_current_path(app_role_name,"-#{ branch }") } && RAILS_ENV=#{ node['environment_name'] } #{ node['unsourced_bundle_command'] }"
+    base_command = "cd #{ current_application_location(app_role_name,"-#{ branch }") } && RAILS_ENV=#{ node['environment_name'] } #{ node['unsourced_bundle_command'] }"
 
     execute "#{ base_command } exec rake db:drop"
 

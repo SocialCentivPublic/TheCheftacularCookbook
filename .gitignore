@@ -13,3 +13,4 @@
 bin
 tmp
 .kitchen.local.yml
+.DS_Store

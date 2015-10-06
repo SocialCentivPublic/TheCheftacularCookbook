@@ -58,7 +58,7 @@ node['TheCheftacularCookbook']['graphite']['storage_schemas'].each_pair do |sche
       })
     end
   end
-end
+end if node['TheCheftacularCookbook']['graphite'].has_key?('storage_schemas')
 
 graphite_service "cache"
 
@@ -149,7 +149,7 @@ include_recipe "nginx_ssl_setup" if node['roles'].include?('https')
 include_recipe "grafana"
 
 htpasswd "/etc/nginx/.htpassword" do
-  user     node['TheCheftacularCookbook']['grafana_auth_user']
+  user     node['TheCheftacularCookbook']['graphite']['grafana_auth_user']
   password node['grafana']['admin_password']
 end
 

@@ -1,4 +1,6 @@
 include Chef::DSL::IncludeRecipe
+include ::TheCheftacularCookbook::Helper
+include ::TheCheftacularCookbook::ApplicationDefault
 
 use_inline_resources if defined?(use_inline_resources)
 
@@ -10,6 +12,8 @@ action :create do
   app_hash = initialize_lamp_application      if new_resource.type == 'lamp'
   app_hash = initialize_nodejs_application    if new_resource.type == 'nodejs'
   app_hash = initialize_wordpress_application if new_resource.type == 'wordpress'
+
+  install_inline_packages if repo_hash(new_resource.role_name).has_key?('custom_packages')
 
   post_application_linking(new_resource.type, app_hash)
 end
@@ -29,7 +33,7 @@ def initialize_lamp_application
     include_recipe "mysql::server"
   end
 
-  if repo_hash(new_resource.type)['stack'] == 'wordpress'
+  if repo_hash(new_resource.role_name)['stack'] == 'wordpress'
     #these must occur AFTER installing mysql
     node.set['wordpress']['php_options'] = { 'upload_max_filesize' => '64M', 'post_max_size' => '55M' }
     node.set['wordpress']['dir']         = "#{ app_hash['path'] }/wordpress"
@@ -37,23 +41,22 @@ def initialize_lamp_application
     include_recipe "wordpress"
   end
 
-  next if node['skip_deploys'] == true
+  return true if node['skip_deploys'] == true
 
   application new_resource.name do
     path              app_hash['path']
-    owner             node.has_key?['special_application_owner'] ? node['special_application_owner'] : node['cheftacular']['deploy_user']
+    owner             node.has_key?('special_application_owner') ? node['special_application_owner'] : node['cheftacular']['deploy_user']
     group             'www-data'
     environment       node['ruby-env']
     revision          app_hash["repo_branch"]
-    repository        "https://#{ app_hash['key_data']["git_OAuth"] }@github.com/#{ app_hash['repo_group'] }/#{ name }.git"
+    repository        app_hash['repo_computed_url']
     shallow_clone     false
-    symlinks          syms
     deploy_key        app_hash['key_data']['git_private_key']
     rollback_on_error node['TheCheftacularCookbook']['deploys']['rollback_on_error'] #allow for debugging of code placed in directory if false.
   end
 
   if repo_hash(new_resource.role_name)['sub_stack'] == 'sencha'
-    operations_directory = node['cheftacular']['repositories'][new_resource.role_name]['operations_directory']
+    operations_directory = repo_hash(new_resource.role_name)['operations_directory']
   
     directory "#{ app_hash["current_path"] }/#{ operations_directory }" do
       user  node['cheftacular']['deploy_user']
@@ -83,6 +86,8 @@ def initialize_lamp_application
       notifies :reload, 'service[nginx]'
     end
   end if node['lamp_stack_to_install'].include?('nginx')
+
+  app_hash
 end
 
 def initialize_nodejs_application
@@ -110,14 +115,14 @@ def initialize_nodejs_application
   execute_command = 'http-server ./app'
   env_vars        = []
 
-  template "/etc/nginx/sites-available/default" do
+  template "/etc/nginx/sites-available/#{ new_resource.name }" do
     source 'general_sites_available.erb'
     owner  'root'
     group  node['root_group']
     mode   '0644'
     variables(
-      name:       n,
-      base_name:  n,
+      name:       new_resource.name,
+      base_name:  new_resource.name,
       log_dir:    node['nginx']['log_dir'],
       path:       app_hash['current_path'],
       target_url: "http://localhost:8080"
@@ -133,9 +138,8 @@ def initialize_nodejs_application
     group             'www-data'
     environment       node['ruby-env']
     revision          app_hash["repo_branch"]
-    repository        "https://#{ app_hash['key_data']["git_OAuth"] }@github.com/#{ app_hash['repo_group'] }/#{ name }.git"
+    repository        app_hash['repo_computed_url']
     shallow_clone     false
-    symlinks          syms
     deploy_key        app_hash['key_data']['git_private_key']
     rollback_on_error node['TheCheftacularCookbook']['deploys']['rollback_on_error'] #allow for debugging of code placed in directory if false.
   end
@@ -176,7 +180,7 @@ def initialize_nodejs_application
     group  node['root_group']
     mode   '0644'
     variables(
-      user:           node['cheftacular']['deploy_user']
+      user:           node['cheftacular']['deploy_user'],
       file_name:      "#{ new_resource.name }.conf",
       command:        execute_command,
       app_loc:        app_hash["current_path"],
@@ -189,19 +193,20 @@ def initialize_nodejs_application
     end
   end
 
+  service "#{ new_resource.name }-server" do
+    provider Chef::Provider::Service::Upstart
+    supports enable: true, start: true, status: true, restart: true
+    action [:start, :enable]
+  end
+
+  if ::File.exists?("/etc/init/#{ new_resource.name }-server.conf")
     service "#{ new_resource.name }-server" do
       provider Chef::Provider::Service::Upstart
-      supports enable: true, start: true, status: true, restart: true
-      action [:start, :enable]
-    end
-
-    if ::File.exists?("/etc/init/#{ new_resource.name }-server.conf")
-      service "#{ new_resource.name }-server" do
-        provider Chef::Provider::Service::Upstart
-        action :restart
-      end
+      action :restart
     end
   end
+
+  app_hash
 end
 
 def initialize_rails_application
@@ -209,11 +214,7 @@ def initialize_rails_application
 
   include_recipe "postgresql::client"
 
-  rvm_gem "bundler" do
-    ruby_string node['rvm']['default_ruby']
-  end
-
-  next if node['skip_deploys'] == true
+  return true if node['skip_deploys'] == true
 
   application new_resource.name do
     path              app_hash['path']
@@ -221,14 +222,13 @@ def initialize_rails_application
     group             'www-data'
     environment       node['ruby-env']
     revision          app_hash["repo_branch"]
-    repository        "https://#{ app_hash['key_data']["git_OAuth"] }@github.com/#{ app_hash['repo_group'] }/#{ name }.git"
+    repository        app_hash['repo_computed_url']
     shallow_clone     false
-    symlinks          syms
+    symlinks          app_hash['syms']
     deploy_key        app_hash['key_data']['git_private_key']
     rollback_on_error true #allow for debugging of code placed in directory if false.
 
     rails do
-      #gems                           [['bundler', '1.7.4']]
       bundle_command                  node['bundle_command']
       environment_name                node['environment_name']
       bundler                         true
@@ -244,7 +244,7 @@ def initialize_rails_application
         host     app_hash['db_master_node']
         port     5432
         pool     20
-        database "#{ new_resource.name }_#{ node['environment_name'] }" #for whatever reason, you cant pass in node.chef_environment directly
+        database "#{ app_hash['db_name'] }_#{ app_hash['db_environment'] }" #for whatever reason, you cant pass in node.chef_environment directly
         username app_hash['db_user']
         password app_hash['pg_pass']
         params   app_hash['db_attrs']
@@ -254,22 +254,18 @@ def initialize_rails_application
     if app_hash['run_web']
 
       nginx do
-        custom_server_configs node['cheftacular']['repositories'][new_resource.role_name]['custom_nginx_configs']
+        custom_server_configs app_hash['custom_nginx_configs']
 
         server_aliases [ app_hash["server_url"], app_hash["server_url_aliases"] ].flatten.compact
       end
 
       puma do
         app_path         app_hash["path"]
-        on_worker_boot   app_hash["pg_connection"] ? puma_pg_worker_boot : nil
+        on_worker_boot   app_hash["pg_connection"] ? app_hash['puma_pg_worker_boot'] : nil
         upstart          true
       end
     end
-
-    app_hash
   end
-
-  package "imagemagick" if new_resource.name =~ /api-socialcentiv-com/
 
   #activate if cleanup becomes a problem
   cron "cleanup_#{ new_resource.name }_#{ node['environment_name'] }.log" do
@@ -278,24 +274,26 @@ def initialize_rails_application
     day     "1"
     user    node['cheftacular']['deploy_user']
     command "tail -5000 #{ app_hash['current_path'] }/log/#{ node['environment_name'] }.log > #{ app_hash['current_path'] }/log/#{ node['environment_name'] }.log"
-  end if node[name]['run_log_cleanup']
+  end if node[new_resource.name]['run_log_cleanup']
 
-  execute 'restart_puma_rails_apps'
-    command "#{ app_hash['shared_path'] }/puma/puma_start.sh" do
+  execute 'restart_puma_rails_apps' do
+    command "#{ app_hash['shared_path'] }/puma/puma_start.sh"
     user    "root"
     only_if { ::File.exists?("#{ app_hash['shared_path'] }/puma/puma_restart.sh") }
   end
+
+  app_hash
 end
 
 def initialize_wordpress_application
-  node.set['mysql']['server_root_password'] = Chef::EncryptedDataBagItem.load(node.chef_environment,"chef_passwords", secret)['mysql_root_pass']
+  node.set['mysql']['server_root_password'] = Chef::EncryptedDataBagItem.load(node.chef_environment,"chef_passwords", node['secret'])['mysql_root_pass']
   node.set['wordpress']['db']['name']       = repo_hash(new_resource.role_name)['application_database_user']
   node.set['wordpress']['db']['user']       = node['wordpress']['db']['name']
-  node.set['wordpress']['db']['pass']       = Chef::EncryptedDataBagItem.load(node.chef_environment,"chef_passwords", secret)['mysql_app_pass']
+  node.set['wordpress']['db']['pass']       = Chef::EncryptedDataBagItem.load(node.chef_environment,"chef_passwords", node['secret'])['mysql_app_pass']
   node.set['wordpress']['db']['host']       = 'localhost'
   node.set['wordpress']['allow_multisite']  = false
 
-  app_hash = initialize_lamp_applicationapp_hash = return_application_defaults_as_hash(new_resource.name, new_resource.type, new_resource.role_name)
+  app_hash = initialize_lamp_application
 
   execute 'rm /var/www/wordpress/wp-content' do
     command "rm -R #{ node['wordpress']['dir'] }/wp-content"
@@ -318,10 +316,18 @@ def initialize_wordpress_application
 
   #Fixing issue with redeploys not being able to write git files
   execute "chmod -R 775 #{ app_hash['current_path'] }/wp-content"
+
+  app_hash
+end
+
+def install_inline_packages
+  repo_hash(new_resource.role_name)['custom_packages'].each do |package_name|
+    package package_name
+  end
 end
 
 def post_application_linking mode, app_hash={}
-  execute "ln -sf #{ node['nginx']['dir']}/sites-available/#{ n } #{ node['nginx']['dir']}/sites-enabled/default" do
+  execute "ln -sf #{ node['nginx']['dir']}/sites-available/#{ app_hash['name'] } #{ node['nginx']['dir']}/sites-enabled/default" do
     only_if "/usr/bin/test -d /etc/nginx && echo \"true\""
   end if node['roles'].include?('web')
 
@@ -368,4 +374,3 @@ def post_application_linking mode, app_hash={}
 
   execute "chown -R #{ node['cheftacular']['deploy_user'] }:www-data #{ app_hash['path'] }" unless mode =~ /wordpress/
 end
-

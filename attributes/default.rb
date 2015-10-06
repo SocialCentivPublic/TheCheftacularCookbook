@@ -1,5 +1,5 @@
 
-default['cheftacular']                   = data_bag_item('default', 'cheftacular').to_hash
+default['cheftacular']                   = Chef::DataBagItem.load('default', 'cheftacular').to_hash
 default['TheCheftacularCookbook']        = node['cheftacular']['TheCheftacularCookbook']
 default['loaded_applications']           = {} #array of all app codebases that will be loaded onto a server. This array is populated further on in the code
 default['environment_name']              = node.chef_environment
@@ -10,7 +10,7 @@ default['additional_db_schemas']         = node['TheCheftacularCookbook']['addit
 default['default_rackspace_volume_size'] = node['TheCheftacularCookbook']['default_rackspace_volume_size']
 
 #Some defaults for chef-rvm
-default['desired_ruby']             = node['cheftacular']['ruby-version'].gsub('ruby-','')
+default['desired_ruby']             = node['cheftacular']['ruby_version'].gsub('ruby-','')
 default['rvm']['default_ruby']      = "ruby-#{ node['desired_ruby'] }"
 default['rvm']['user_default_ruby'] = "ruby-#{ node['desired_ruby'] }"
 default['rvm']['rvm_home']          = "/home/#{ node['cheftacular']['deploy_user'] }/.rvm"
