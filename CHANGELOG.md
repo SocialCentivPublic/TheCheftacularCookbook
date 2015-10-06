@@ -1,4 +1,4 @@
-## 1.0.2
+## 1.0.3
 
 * Update to application_defaults to use new cheftacular key for a repo: **use_other_repo_database**
 
