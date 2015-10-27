@@ -46,7 +46,7 @@ node['TheCheftacularCookbook']['graphite']['storage_schemas'].each_pair do |sche
       graphite_storage_schema "#{ schema }_#{ schema_name }" do
         config ({
           pattern: schema_hash['pattern'].gsub('SCHEMA_NAME', schema),
-          retentions: schema_hash['retensions']
+          retentions: schema_hash['retentions']
         })
       end
     end
@@ -54,7 +54,7 @@ node['TheCheftacularCookbook']['graphite']['storage_schemas'].each_pair do |sche
     graphite_storage_schema schema_name do
       config ({
         pattern: schema_hash['pattern'],
-        retentions: schema_hash['retensions']
+        retentions: schema_hash['retentions']
       })
     end
   end
