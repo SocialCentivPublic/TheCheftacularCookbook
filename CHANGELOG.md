@@ -1,8 +1,14 @@
 ## 1.0.3
 
-* Update to application_defaults to use new cheftacular key for a repo: **use_other_repo_database**
+* Fix to graphite workers not starting successfully
 
-* More fixes to address runtime issues of unexpected settings.
+* Fix to wordpress applications not creating their uploads directory correctly
+
+* Fix to HAproxy servers using an outdated version that doesn't support the latest SSL termination protocols (changes will safely update to the latest)
+
+## 1.0.2
+
+* Update to application_defaults to use new cheftacular key for a repo: **use_other_repo_database**
 
 ## 1.0.1
 

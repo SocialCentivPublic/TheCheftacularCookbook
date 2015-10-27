@@ -5,7 +5,6 @@ include_recipe "TheCheftacularCookbook"
 
 tld = data_bag_item( node.chef_environment, 'config').to_hash[node['environment_name']]['tld']
 
-#TODO fix when working in staging
 node.set['haproxy']['enable_default_http'] = !node['roles'].include?('https')
 node.set['haproxy']['ssl_termination']     = node['roles'].include?('https')
 node.set['haproxy']['x_forwarded_for']     = true
@@ -17,16 +16,25 @@ if node['roles'].include?('https')
     shell "/bin/false"
   end
 
-  node.set['haproxy']['ssl_termination_pem_file'] = "/etc/ssl/private_haproxy/#{ tld }.pem"
+  node.set['haproxy']['global_options']['ssl-default-bind-options'] = 'no-sslv3 no-tls-tickets force-tlsv12'
+  node.set['haproxy']['global_options']['ssl-default-bind-ciphers'] = 'AES128+EECDH:AES128+EDH'
+
+  node.set['haproxy']['ssl_termination_pem_file'] = "/etc/ssl/private_haproxy/*.#{ tld }.pem ciphers AES128+EECDH:AES128+EDH force-tlsv12 no-sslv3"
   node.set['haproxy']['ssl_incoming_address']     = node['ipaddress']
   node.set['haproxy']['source']['use_openssl']    = true
   node.set['haproxy']['install_method']           = 'source'
-  node.set['haproxy']['source']['version']        = '1.5.5' #only 1.5.4 and later support SSL termination
-  node.set['haproxy']['source']['url']            = 'http://www.haproxy.org/download/1.5/src/haproxy-1.5.5.tar.gz'
-  node.set['haproxy']['source']['checksum']       = 'e8d014e99a025e7d7878d402d30e03666c6d205c630a0b3c25f53a09fff4827c'
+  node.set['haproxy']['source']['version']        = '1.5.14' #only 1.5.4 and later support SSL termination
+  node.set['haproxy']['source']['url']            = 'http://www.haproxy.org/download/1.5/src/haproxy-1.5.14.tar.gz'
+  node.set['haproxy']['source']['checksum']       = '9565dd38649064d0350a2883fa81ccfe92eb17dcda457ebdc01535e1ab0c8f99'
 
   node.set['haproxy']['admin']['username']        = node['TheCheftacularCookbook']['haproxy']['admin_username']
   node.set['haproxy']['admin']['password']        = node['TheCheftacularCookbook']['haproxy']['admin_password']
+
+  execute "upgrade_haproxy" do
+    command "rm /usr/local/sbin/haproxy"
+
+    not_if "/usr/local/sbin/haproxy -v | grep #{ node['haproxy']['source']['version'] }" # delete the file if the version is not the latest
+  end
 
   target_dir_arr = node['haproxy']['ssl_termination_pem_file'].split('/')
   target_dir = target_dir_arr[0..(target_dir_arr.length-2)].join('/')

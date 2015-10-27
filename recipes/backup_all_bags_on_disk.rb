@@ -16,6 +16,10 @@ file "#{ node['bag_backup_location'] }/default_authentication.json" do
 end
 
 data_bag_item( 'default', 'environment_config').to_hash.each_pair do |env, env_hash|
+  next if env =~ /id|chef_type|data_bag/
+  
+  Chef::Log.info("Preparing to store log hashes for #{ env }\n(#{ env_hash })")
+
   directory "#{ node['bag_backup_location'] }/#{ env }" do
     user  node['cheftacular']['deploy_user']
     group node['cheftacular']['deploy_user']
