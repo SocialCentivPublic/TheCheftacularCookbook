@@ -1,3 +1,11 @@
+## 1.0.5
+
+* Major fix to database volumes not configuring sub directories correctly
+
+## 1.0.4
+
+* Minor tweaks to wordpress installations
+
 ## 1.0.3
 
 * Fix to graphite workers not starting successfully

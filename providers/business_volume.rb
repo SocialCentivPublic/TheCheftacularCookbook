@@ -41,28 +41,28 @@ action :create do
   end if node['cheftacular']['preferred_cloud'] == 'rackspace'
 
   new_resource.sub_directories.each_pair do |dirpath, dir_hash|
-    if dir_hash.has_key?('not_if')
+    if dir_hash.has_key?(:not_if)
       directory "#{ mount_directory }/#{ dirpath }" do
-        user      dir_hash.has_key?('user') ? dir_hash['user'] : node['cheftacular']['deploy_user']
-        group     dir_hash.has_key?('group') ? dir_hash['group'] : node['cheftacular']['deploy_user']
-        mode      dir_hash.has_key?('mode') ? dir_hash['mode'] : '700'
-        recursive dir_hash.has_key?('recursive')
-        not_if    dir_hash['not_if']
+        user      dir_hash.has_key?(:user) ? dir_hash[:user] : node['cheftacular']['deploy_user']
+        group     dir_hash.has_key?(:group) ? dir_hash[:group] : node['cheftacular']['deploy_user']
+        mode      dir_hash.has_key?(:mode) ? dir_hash[:mode] : '700'
+        recursive dir_hash.has_key?(:recursive)
+        not_if    dir_hash[:not_if]
       end
-    elsif dir_hash.has_key?('only_if')
+    elsif dir_hash.has_key?(:only_if)
       directory "#{ mount_directory }/#{ dirpath }" do
-        user      dir_hash.has_key?('user') ? dir_hash['user'] : node['cheftacular']['deploy_user']
-        group     dir_hash.has_key?('group') ? dir_hash['group'] : node['cheftacular']['deploy_user']
-        mode      dir_hash.has_key?('mode') ? dir_hash['mode'] : '700'
-        recursive dir_hash.has_key?('recursive')
-        only_if   dir_hash['only_if']
+        user      dir_hash.has_key?(:user) ? dir_hash[:user] : node['cheftacular']['deploy_user']
+        group     dir_hash.has_key?(:group) ? dir_hash[:group] : node['cheftacular']['deploy_user']
+        mode      dir_hash.has_key?(:mode) ? dir_hash[:mode] : '700'
+        recursive dir_hash.has_key?(:recursive)
+        only_if   dir_hash[:only_if]
       end
     else
       directory "#{ mount_directory }/#{ dirpath }" do
-        user      dir_hash.has_key?('user') ? dir_hash['user'] : node['cheftacular']['deploy_user']
-        group     dir_hash.has_key?('group') ? dir_hash['group'] : node['cheftacular']['deploy_user']
-        mode      dir_hash.has_key?('mode') ? dir_hash['mode'] : '700'
-        recursive dir_hash.has_key?('recursive')
+        user      dir_hash.has_key?(:user) ? dir_hash[:user] : node['cheftacular']['deploy_user']
+        group     dir_hash.has_key?(:group) ? dir_hash[:group] : node['cheftacular']['deploy_user']
+        mode      dir_hash.has_key?(:mode) ? dir_hash[:mode] : '700'
+        recursive dir_hash.has_key?(:recursive)
       end
     end
   end
