@@ -1,3 +1,5 @@
+* Fix to database user not always being inserted into a rails application database.yml
+
 ## 1.0.3
 
 * Fix to graphite workers not starting successfully

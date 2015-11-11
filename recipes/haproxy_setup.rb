@@ -33,6 +33,7 @@ if node['roles'].include?('https')
   execute "upgrade_haproxy" do
     command "rm /usr/local/sbin/haproxy"
 
+    only_if { ::File.exists?('/usr/local/sbin/haproxy') }
     not_if "/usr/local/sbin/haproxy -v | grep #{ node['haproxy']['source']['version'] }" # delete the file if the version is not the latest
   end
 
