@@ -309,7 +309,7 @@ def initialize_wordpress_application
   end
 
   execute 'link uploads to wordpress' do
-    command "ln -fs #{ app_hash['shared_path'] }/shared/uploads #{ app_hash['current_path'] }/wp-content"
+    command "ln -fs #{ app_hash['shared_path'] }/uploads #{ app_hash['current_path'] }/wp-content"
   end
 
   execute "chown -R www-data:www-data #{ app_hash['path'] }"

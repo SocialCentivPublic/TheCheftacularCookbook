@@ -1,4 +1,14 @@
+## 1.0.5
+
+* Major fix to database volumes not configuring sub directories correctly
+
+* Major fix to helper calls not configuring repo_hashes correctly
+
 * Fix to database user not always being inserted into a rails application database.yml
+
+## 1.0.4
+
+* Minor tweaks to wordpress installations
 
 ## 1.0.3
 

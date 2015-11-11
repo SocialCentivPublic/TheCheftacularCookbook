@@ -139,6 +139,8 @@ module TheCheftacularCookbook
     end
 
     def environment_name_is_split_env?
+      return false unless node['cheftacular']['run_list_environments'].has_key?(node.chef_environment)
+      
       node['cheftacular']['run_list_environments'][node.chef_environment].each_pair do |role_name, env_name|
         return true if node['roles'].include?(role_name)
       end
