@@ -5,7 +5,7 @@ use_inline_resources if defined?(use_inline_resources)
 
 action :create do
   mount_directory   = new_resource.primary_directory
-  cloud_conditional = case node['cloud']
+  cloud_conditional = case node['cheftacular']['preferred_cloud']
                       when 'rackspace'    then 'cat /proc/mounts | grep #{ mount_directory }'
                       when 'digitalocean' then '' #TODO REFACTOR TO BETTER SOLUTION THAT CHECKS NODE STATE
                       end
@@ -29,13 +29,13 @@ action :create do
 
   #lazy load mount point
   execute "create_fs" do
-    command lazy { "mkfs -t ext3 #{ node[:rackspacecloud][:cbs][:attached_volumes].select{|attachment| attachment[:display_name] == mount_name}.first[:device] }" }
+    command lazy { "mkfs -t ext3 #{ node[:rackspacecloud][:cbs][:attached_volumes].select{|attachment| attachment[:display_name] == new_resource.name}.first[:device] }" }
     user    "root"
     not_if "cat /proc/mounts | grep #{ mount_directory }"
   end if node['cheftacular']['preferred_cloud'] == 'rackspace'
 
   mount mount_directory do
-    device lazy { node[:rackspacecloud][:cbs][:attached_volumes].select{|attachment| attachment[:display_name] == mount_name}.first[:device] }
+    device lazy { node[:rackspacecloud][:cbs][:attached_volumes].select{|attachment| attachment[:display_name] == new_resource.name}.first[:device] }
     fstype "ext3"
     not_if "cat /proc/mounts | grep #{ mount_directory }"
   end if node['cheftacular']['preferred_cloud'] == 'rackspace'

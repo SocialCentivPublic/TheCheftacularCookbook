@@ -34,4 +34,4 @@ end
 
 include_recipe "TheCheftacularCookbook::deploy_ssh_setup"
 include_recipe "TheCheftacularCookbook::attribute_toggles"
-include_recipe "rackspacecloud" if node['cloud'] == 'rackspace'
+include_recipe "rackspacecloud" if node['cheftacular']['preferred_cloud'] == 'rackspace'

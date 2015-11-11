@@ -11,7 +11,7 @@ cron_commands = [
 ]
 
 if data_bag_item( node.chef_environment, 'config').to_hash[node['environment_name']]['restore_backups']
-  node['loaded_applications'].each do |app_role_name|
+  node['loaded_applications'].each_key do |app_role_name|
     next unless has_repo_hash?(app_role_name)
     next unless repo_hash(app_role_name)['database'] == 'postgresql'
 
