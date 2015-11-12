@@ -6,6 +6,8 @@
 
 * Fix to database user not always being inserted into a rails application database.yml
 
+* Fix to backup server not getting loaded on backup_gem calls
+
 ## 1.0.4
 
 * Minor tweaks to wordpress installations

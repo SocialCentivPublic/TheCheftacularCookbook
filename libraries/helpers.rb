@@ -28,8 +28,9 @@ module TheCheftacularCookbook
       string.gsub(/#{envs.join('|')}/, "").gsub('-',"")
     end
 
-    def address_hash_from_node_name node_name, return_hash={}
-      data_bag_item('default','addresses').to_hash.each_pair do |env, serv_arr|
+    def address_hash_from_node_name node_name, environment='default', return_hash={}
+      environment = environment == 'default' ? node.chef_environment : environment
+      data_bag_item(environment,'addresses').to_hash.each_pair do |env, serv_arr|
         next if serv_arr.class != Array
         serv_arr.each do |serv_hash|
           next unless serv_hash['name'] == node_name
