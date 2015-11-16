@@ -1,3 +1,7 @@
+## 1.0.6
+
+* Added new sensu check cleanup-processes.rb
+
 ## 1.0.5
 
 * Major fix to database volumes not configuring sub directories correctly
