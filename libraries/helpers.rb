@@ -28,14 +28,21 @@ module TheCheftacularCookbook
       string.gsub(/#{envs.join('|')}/, "").gsub('-',"")
     end
 
-    def address_hash_from_node_name node_name, environment='default', return_hash={}
-      environment = environment == 'default' ? node.chef_environment : environment
-      data_bag_item(environment,'addresses').to_hash.each_pair do |env, serv_arr|
-        next if serv_arr.class != Array
-        serv_arr.each do |serv_hash|
-          next unless serv_hash['name'] == node_name
+    def address_hash_from_node_name node_name, envs_to_check=[], return_hash={}
+      data_bag_item('default', 'environment_config').to_hash.each_pair do |env, env_hash|
+        next if env =~ /id|chef_type|data_bag/
 
-          return_hash = serv_hash
+        envs_to_check << env if env_hash['bags'].include?('addresses_bag')
+      end if envs_to_check.empty?
+
+      envs_to_check.each do |env_in_check|
+        data_bag_item(env_in_check, 'addresses').to_hash.each_pair do |env, serv_arr|
+          next if serv_arr.class != Array
+          serv_arr.each do |serv_hash|
+            next unless serv_hash['name'] == node_name
+
+            return_hash = serv_hash
+          end
         end
       end
 

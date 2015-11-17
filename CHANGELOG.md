@@ -1,3 +1,7 @@
+## 1.0.7
+
+* Fixed bug in db_prepare_backups_setup.rb where clients that were not in the main server's environment would not get sent backups.
+
 ## 1.0.6
 
 * Added new sensu check cleanup-processes.rb

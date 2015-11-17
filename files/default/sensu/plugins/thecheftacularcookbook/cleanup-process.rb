@@ -58,7 +58,7 @@ class CleanupProcess < Sensu::Plugin::Check::CLI
       target_procs[proc_id]['line'] = case
                                       when proc.include?(base_line) then proc
                                       end
-      target_procs_order << proc_id
+      target_proc_order << proc_id
     end
 
     target_procs.each_pair do |prc_id, proc_hash|
