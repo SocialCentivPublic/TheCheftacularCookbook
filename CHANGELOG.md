@@ -1,3 +1,7 @@
+## 1.0.9
+
+* Fixed syntax error in sensu_gems.rb
+
 ## 1.0.8
 
 * Fixed bug in sensu_gems.rb that made gem installs occur on all runs
