@@ -33,7 +33,7 @@ primary_connection_info.each_pair do |user, user_hash|
   postgresql_database_user user do
     connection node['postgres_connection_info']
 
-    password user_hash['password']
+    password user_hash[:password]
     action :create
   end
 end
@@ -76,10 +76,10 @@ node['loaded_applications'].each_key do |app_role_name|
     end
   end
 
-  primary_connection_info.each_key do |user|
+  primary_connection_info.each_pair do |user, user_hash|
     postgresql_database "#{ repo_hash['repo_name'] }_#{ node.chef_environment }" do
       connection node['postgres_connection_info']
-      sql        "ALTER ROLE #{ user } with SUPERUSER CREATEDB CREATEROLE"
+      sql        "ALTER ROLE #{ user } with SUPERUSER CREATEDB CREATEROLE password '#{ user_hash[:password] }'"
       action     :query
     end
   end

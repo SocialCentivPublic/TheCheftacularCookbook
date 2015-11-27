@@ -1,3 +1,9 @@
+## 1.0.8
+
+* Fixed bug in sensu_gems.rb that made gem installs occur on all runs
+
+* Fixed bug with database creation that would cause the default application user to not be able to access
+
 ## 1.0.7
 
 * Fixed bug in db_prepare_backups_setup.rb where clients that were not in the main server's environment would not get sent backups.

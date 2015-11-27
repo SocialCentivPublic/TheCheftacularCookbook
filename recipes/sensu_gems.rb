@@ -5,8 +5,7 @@ gems << ['bundler', 'rspec', 'spork', 'webmock', 'simplecov'] if node['roles'].i
 
 gems << node['TheCheftacularCookbook']['sensu']['sensu_gems'] if node['TheCheftacularCookbook']['sensu'].has_key?('sensu_gems')
 
-if node['setup_sensu_gems'] || (node['TheCheftacularCookbook']['sensu'].has_key?('reinstall_sensu_gems') && node['TheCheftacularCookbook']['sensu']['reinstall_sensu_gems'])
-  gems.flatten.each do |spec_gem|
+if node['setup_sensu_gems'].nil? || (node['TheCheftacularCookbook']['sensu'].has_key?('reinstall_sensu_gems') && node['TheCheftacularCookbook']['sensu']['reinstall_sensu_gems'])
     execute "sudo /opt/sensu/embedded/bin/gem install #{ spec_gem }"
   end
 end
