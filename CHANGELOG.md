@@ -1,3 +1,7 @@
+## 1.0.10
+
+* Fix runtime error in https haproxy instances
+
 ## 1.0.9
 
 * Fixed syntax error in sensu_gems.rb

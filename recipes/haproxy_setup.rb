@@ -19,7 +19,7 @@ if node['roles'].include?('https')
   node.set['haproxy']['global_options']['ssl-default-bind-options'] = 'no-sslv3 no-tls-tickets force-tlsv12'
   node.set['haproxy']['global_options']['ssl-default-bind-ciphers'] = 'AES128+EECDH:AES128+EDH'
 
-  node.set['haproxy']['ssl_termination_pem_file'] = "/etc/ssl/private_haproxy/*.#{ tld }.pem ciphers AES128+EECDH:AES128+EDH force-tlsv12 no-sslv3"
+  node.set['haproxy']['ssl_termination_pem_file'] = "/etc/ssl/private_haproxy/*.#{ tld }.pem"
   node.set['haproxy']['ssl_incoming_address']     = node['ipaddress']
   node.set['haproxy']['source']['use_openssl']    = true
   node.set['haproxy']['install_method']           = 'source'
