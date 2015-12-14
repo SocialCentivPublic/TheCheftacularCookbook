@@ -87,6 +87,8 @@ def initialize_lamp_application
     end
   end if node['lamp_stack_to_install'].include?('nginx')
 
+  configure_backup_gem if trigger_backups_for_repo?(new_resource.role_name)
+
   app_hash
 end
 
@@ -206,7 +208,7 @@ def initialize_nodejs_application
     end
   end
 
-  configure_backup_gem if repo_hash(new_resource.role_name).has_key?('backup_gem_local_backups')
+  configure_backup_gem if trigger_backups_for_repo?(new_resource.role_name)
 
   app_hash
 end
@@ -284,7 +286,7 @@ def initialize_rails_application
     only_if { ::File.exists?("#{ app_hash['shared_path'] }/puma/puma_restart.sh") }
   end
 
-  configure_backup_gem if repo_hash(new_resource.role_name).has_key?('backup_gem_local_backups')
+  configure_backup_gem if trigger_backups_for_repo?(new_resource.role_name)
 
   app_hash
 end
@@ -321,8 +323,6 @@ def initialize_wordpress_application
   #Fixing issue with redeploys not being able to write git files
   execute "chmod -R 775 #{ app_hash['current_path'] }/wp-content"
 
-  configure_backup_gem if repo_hash(new_resource.role_name).has_key?('backup_gem_local_backups')
-
   app_hash
 end
 
@@ -345,11 +345,13 @@ def configure_backup_gem
             when 'mysql'      then { type: 'MySQL',      name: node['wordpress']['db']['name'], username: node['wordpress']['db']['user'], password: node['wordpress']['db']['pass'] }
             when 'mongodb'    then { type: 'MongoDB',    name: 'mongodb', username: '', password: '' }
             when 'none'       then 'return!'
-            end        
+            end
+
+  Chef::Log.info("TESTING!!::#{ node.instance_eval("node['wordpress']['db']['name']") }")
 
   return false if db_type == 'return!'
 
-  db_name = repo_hash(app_role_name).has_key?('short_database_name') ? repo_hash(app_role_name)['short_database_name'] : app_role_name
+  db_name = repo_hash(new_resource.role_name).has_key?('short_database_name') ? repo_hash(new_resource.role_name)['short_database_name'] : new_resource.role_name
   
   db_string << "database #{ db_hash[:type] }, :#{ db_name }_#{ node.name } do |db|
       db.name = '#{ db_hash[:name] }'
@@ -367,11 +369,11 @@ def configure_backup_gem
         server.ip   = '#{ serv_hash['address'] }'
         server.port = '22'
         server.path = '#{ node['backupmaster_storage_location'] }'
-        server.keep = 10
+        server.keep = #{ repo_hash(new_resource.role_name)['backup_gem_backups']['keep'] }
       end
       
       "
-  end
+  end if repo_hash(new_resource.role_name)['backup_gem_backups']['store_on_backup_server']
 
   if node['TheCheftacularCookbook']['sensu']['slack_handlers']['slack_critical'].has_key?('token')
     slack_string << "notify_by Slack do |slack|
@@ -400,12 +402,27 @@ def configure_backup_gem
 
       store_with Local do |local|
         local.path = '/mnt/minibackup/backups/'
-        local.keep = 5
+        local.keep = #{ repo_hash(new_resource.role_name)['backup_gem_backups']['keep'] }
       end
 
       #{ slack_string }
     DEF
   end
+
+  if repo_hash(role_name)['backup_gem_backups']['active'].nil? || !repo_hash(role_name)['backup_gem_backups']['active']
+    cron "#{ node.name }_#{ new_resource.name }_backup" do
+      minute  repo_hash(new_resource.role_name)['backup_gem_backups']['minute']
+      hour    repo_hash(new_resource.role_name)['backup_gem_backups']['hour']
+      user    "root"
+      command "/bin/bash -l -c '/opt/chef/embedded/bin/backup perform -t #{ node.name } --root-path #{ node['backup']['config_path'] }'"
+    end
+  else
+    cron "#{ node.name }_#{ new_resource.name }_backup" do
+      action :delete
+    end
+  end
+
+  node.set["setup_#{ node.name }_#{ new_resource.role_name }_backup"] = true
 end
 
 def install_inline_packages

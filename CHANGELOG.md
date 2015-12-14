@@ -1,3 +1,7 @@
+## 1.1.1
+
+* Improved the backup templates and increased the integration with the *backup_gem_backups* key
+
 ## 1.1.0
 
 * Added new backup templates for automatically storing data from MySQL and mongo nodes locally and on the backupmaster. This is triggered by the cheftacular.yml key *backup_gem_backups* in your repo config hash.
