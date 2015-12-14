@@ -1,3 +1,7 @@
+## 1.1.0
+
+* Added new backup templates for automatically storing data from MySQL and mongo nodes locally and on the backupmaster. This is triggered by the cheftacular.yml key *backup_gem_backups* in your repo config hash.
+
 ## 1.0.10
 
 * Fix runtime error in https haproxy instances

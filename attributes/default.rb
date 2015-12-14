@@ -8,6 +8,7 @@ default['secret_path']                   = '/etc/chef/data_bag_key'
 default['secret']                        = Chef::EncryptedDataBagItem.load_secret("#{ node['secret_path'] }")
 default['additional_db_schemas']         = node['TheCheftacularCookbook']['additional_db_schemas']
 default['default_rackspace_volume_size'] = node['TheCheftacularCookbook']['default_rackspace_volume_size']
+default['backupmaster_storage_location'] = '/mnt/backupmaster/backups'
 
 #Some defaults for chef-rvm
 default['desired_ruby']             = node['cheftacular']['ruby_version'].gsub('ruby-','')
