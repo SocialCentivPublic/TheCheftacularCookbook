@@ -4,7 +4,9 @@ include_recipe "TheCheftacularCookbook::db_prepare_storage_backups_volume"
 
 include_recipe "backup"
 
-chef_gem "backup"
+chef_gem "backup" do
+  version node['backup']['version']
+end
 
 backup_nodes, store_with_string, db_string, long_term_backup_nodes = [], '', '', []
 
@@ -14,7 +16,7 @@ end
 
 search(:node, "receive_long_term_backups:*") do |n|
   backup_env = node['cheftacular']['backup_config']['global_backup_environ']
-  long_term_backup_nodes << address_hash_from_node_name(scrub_chef_environments_from_string(n['hostname'], backup_env)) if n['receive_long_term_backups']
+  long_term_backup_nodes << address_hash_from_node_name(scrub_chef_environments_from_string(n['hostname']), [backup_env]) if n['receive_long_term_backups']
 end
 
 node['loaded_applications'].each_key do |app_role_name|

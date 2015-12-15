@@ -1,3 +1,7 @@
+## 1.1.2
+
+* Fixed errors that could arise with the new backups
+
 ## 1.1.1
 
 * Improved the backup templates and increased the integration with the *backup_gem_backups* key

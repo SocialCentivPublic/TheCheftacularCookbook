@@ -53,3 +53,4 @@ default['authorization']['sudo']['include_sudoers_d'] = true
 
 #TODO CHECK WITH BACKUP GEM AND RECIPES, ITS STUCK AT THIS
 default[:rackspacecloud][:fog_version] = "1.28.0"
+default['backup']['version']           = '4.1.10'

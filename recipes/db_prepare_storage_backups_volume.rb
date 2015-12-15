@@ -1,6 +1,10 @@
 mount_name  = "#{ node['hostname'].gsub('-','_') }_backup_storage"
 volume_hash = node['TheCheftacularCookbook']['volume_config']['database_backup']
 
+node.set_unless['main_backup_location']  = '/mnt/postgresbackups/backups'
+node.set_unless['backup']['config_path'] = "#{ node['main_backup_location'] }/backup_gem"
+node.set_unless['backup']['model_path']  = "#{ node['backup']['config_path'] }/models"
+
 sub_directories_hash = {
   "backups"             => { mode: '777', recursive: true },
   "backups/main_backup" => { mode: '777', recursive: true }
