@@ -1,3 +1,7 @@
+## 1.1.3
+
+* Fixed errors in database creation on new servers
+
 ## 1.1.2
 
 * Fixed errors that could arise with the new backups
