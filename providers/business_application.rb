@@ -361,7 +361,7 @@ def configure_backup_gem
       db.name = '#{ db_hash[:name] }'
       #{ "db.username = '#{ db_hash[:username] }'" unless db_hash[:username].empty? }
       db.host = 'localhost'
-      #{ "db.username = '#{ db_hash[:password] }'" unless db_hash[:password].empty? }
+      #{ "db.password = '#{ db_hash[:password] }'" unless db_hash[:password].empty? }
     end
 
     "

@@ -1,3 +1,7 @@
+## 1.1.4
+
+* Fixed runtime error where the database hash for minibackup generation is wrong
+
 ## 1.1.3
 
 * Fixed errors in database creation on new servers
