@@ -35,7 +35,7 @@ module TheCheftacularCookbook
       ret_hash['db_master_node']              = 'localhost' if node['roles'].include?('sensu_build_db') || node['roles'].include?('db_slave') #build servers
       ret_hash['run_web']                     = node['roles'].include?('web')
       ret_hash['is_sensu_build']              = node['roles'].include?('sensu_build_db')
-      ret_hash['db_user']                     = repo_hash(role_name)['application_database_user'] if repo_hash(role_name).has_key?('application_database_users')
+      ret_hash['db_user']                     = repo_hash(role_name)['application_database_user'] if repo_hash(role_name).has_key?('application_database_user')
       ret_hash['db_environment']              = node['environment_name']
       ret_hash['db_name']                     = repo_hash(role_name).has_key?('use_other_repo_database') ? repo_hash(role_name)['use_other_repo_database'] : name
       ret_hash['db_attrs']                    = {}

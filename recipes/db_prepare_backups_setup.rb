@@ -4,7 +4,9 @@ include_recipe "TheCheftacularCookbook::db_prepare_storage_backups_volume"
 
 include_recipe "backup"
 
-chef_gem "backup"
+chef_gem "backup" do
+  version node['backup']['version']
+end
 
 backup_nodes, store_with_string, db_string, long_term_backup_nodes = [], '', '', []
 
@@ -13,10 +15,11 @@ search(:node, "receive_backups:*") do |n|
 end
 
 search(:node, "receive_long_term_backups:*") do |n|
-  long_term_backup_nodes << address_hash_from_node_name(scrub_chef_environments_from_string(n['hostname'])) if n['receive_long_term_backups']
+  backup_env = node['cheftacular']['backup_config']['global_backup_environ']
+  long_term_backup_nodes << address_hash_from_node_name(scrub_chef_environments_from_string(n['hostname']), [backup_env]) if n['receive_long_term_backups']
 end
 
-node['loaded_applications'].each do |app_role_name|
+node['loaded_applications'].each_key do |app_role_name|
   next unless has_repo_hash?(app_role_name)
   next unless repo_hash(app_role_name)['database'] == 'postgresql'
 
@@ -56,6 +59,22 @@ long_term_backup_nodes.each do |serv_hash|
       server.keep = #{ node['long_term_backup_count'] }
     end
     
+    "
+end
+
+if node['TheCheftacularCookbook']['sensu']['slack_handlers']['slack_critical'].has_key?('token')
+  slack_string << "notify_by Slack do |slack|
+      slack.on_success = true
+      slack.on_warning = true
+      slack.on_failure = true
+
+      # The integration token
+      slack.webhook_url = 'https://hooks.slack.com/services/#{ node['TheCheftacularCookbook']['sensu']['slack_handlers']['slack_critical']['token'] }'
+
+      # The username to display along with the notification
+      slack.username = 'Postgresbackups'
+    end
+
     "
 end
 

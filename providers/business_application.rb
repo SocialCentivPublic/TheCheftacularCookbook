@@ -87,6 +87,8 @@ def initialize_lamp_application
     end
   end if node['lamp_stack_to_install'].include?('nginx')
 
+  configure_backup_gem if trigger_backups_for_repo?(new_resource.role_name)
+
   app_hash
 end
 
@@ -206,6 +208,8 @@ def initialize_nodejs_application
     end
   end
 
+  configure_backup_gem if trigger_backups_for_repo?(new_resource.role_name)
+
   app_hash
 end
 
@@ -282,6 +286,8 @@ def initialize_rails_application
     only_if { ::File.exists?("#{ app_hash['shared_path'] }/puma/puma_restart.sh") }
   end
 
+  configure_backup_gem if trigger_backups_for_repo?(new_resource.role_name)
+
   app_hash
 end
 
@@ -309,7 +315,7 @@ def initialize_wordpress_application
   end
 
   execute 'link uploads to wordpress' do
-    command "ln -fs /shared/uploads #{ app_hash['current_path'] }/wp-content"
+    command "ln -fs #{ app_hash['shared_path'] }/uploads #{ app_hash['current_path'] }/wp-content"
   end
 
   execute "chown -R www-data:www-data #{ app_hash['path'] }"
@@ -318,6 +324,109 @@ def initialize_wordpress_application
   execute "chmod -R 775 #{ app_hash['current_path'] }/wp-content"
 
   app_hash
+end
+
+def configure_backup_gem
+  include_recipe "TheCheftacularCookbook::prepare_mini_backups_storage_volume"
+
+  include_recipe "backup"
+
+  chef_gem "backup" do
+    version node['backup']['version']
+  end
+  
+  backup_nodes, store_with_string, db_string, slack_string, log_string, long_term_backup_nodes = [], '', '', '', '', []
+
+  keep_amount = repo_hash(new_resource.role_name)['backup_gem_backups']['keep']
+
+  search(:node, "receive_long_term_backups:*") do |n|
+    backup_env = node['cheftacular']['backup_config']['global_backup_environ']
+    long_term_backup_nodes << address_hash_from_node_name(scrub_chef_environments_from_string(n['hostname']), [backup_env]) if n['receive_long_term_backups']
+  end
+
+  db_hash = case repo_hash(new_resource.role_name)['database']
+            when 'postgresql' then 'return!' #use the db_prepare_backups recipes for this
+            when 'mysql'      then { type: 'MySQL',      name: node['wordpress']['db']['name'], username: node['wordpress']['db']['user'], password: node['wordpress']['db']['pass'] }
+            when 'mongodb'    then { type: 'MongoDB',    name: 'mongodb', username: '', password: '' }
+            when 'none'       then 'return!'
+            end
+
+  #Chef::Log.info("TESTING!!::#{ node.instance_eval("node['wordpress']['db']['name']") }") #use this to make the above hash configurable
+
+  return false if db_hash == 'return!'
+
+  db_name = repo_hash(new_resource.role_name).has_key?('short_database_name') ? repo_hash(new_resource.role_name)['short_database_name'] : new_resource.role_name
+  
+  db_string << "database #{ db_hash[:type] }, :#{ db_name }_#{ node.name } do |db|
+      db.name = '#{ db_hash[:name] }'
+      #{ "db.username = '#{ db_hash[:username] }'" unless db_hash[:username].empty? }
+      db.host = 'localhost'
+      #{ "db.password = '#{ db_hash[:password] }'" unless db_hash[:password].empty? }
+    end
+
+    "
+
+  long_term_backup_nodes.each do |serv_hash|
+    next if serv_hash.empty?
+    store_with_string << "store_with SCP, :#{ serv_hash['name'] } do |server|
+        server.username = '#{ node['cheftacular']['deploy_user'] }'
+        server.ip   = '#{ serv_hash['address'] }'
+        server.port = '22'
+        server.path = '#{ node['backupmaster_storage_location'] }'
+        server.keep = #{ keep_amount }
+      end
+      
+      "
+  end if repo_hash(new_resource.role_name)['backup_gem_backups']['store_on_backup_server']
+
+  if node['TheCheftacularCookbook']['sensu']['slack_handlers']['slack_critical'].has_key?('token')
+    slack_string << "notify_by Slack do |slack|
+        slack.on_success = true
+        slack.on_warning = true
+        slack.on_failure = true
+
+        # The integration token
+        slack.webhook_url = 'https://hooks.slack.com/services/#{ node['TheCheftacularCookbook']['sensu']['slack_handlers']['slack_critical']['token'] }'
+
+        # The username to display along with the notification
+        slack.username = '#{ db_hash[:type] }Backups'
+      end
+
+      "
+  end
+
+  backup_model "#{ node.name }_#{ new_resource.role_name }_backup".to_sym do
+    description "Back up #{ db_hash[:type] } database"
+
+    definition <<-DEF
+
+      #{ db_string }
+
+      #{ store_with_string }
+
+      store_with Local do |local|
+        local.path = '/mnt/minibackup/backups/'
+        local.keep = #{ keep_amount }
+      end
+
+      #{ slack_string }
+    DEF
+  end
+
+  if repo_hash(new_resource.role_name)['backup_gem_backups']['active'].nil? || repo_hash(new_resource.role_name)['backup_gem_backups']['active']    
+    cron "#{ node.name }_#{ new_resource.role_name }_backup" do
+      minute  repo_hash(new_resource.role_name)['backup_gem_backups']['minute']
+      hour    repo_hash(new_resource.role_name)['backup_gem_backups']['hour']
+      user    "root"
+      command "/bin/bash -l -c '/opt/chef/embedded/bin/backup perform -t #{ node.name }_#{ new_resource.role_name }_backup --root-path #{ node['backup']['config_path'] }'"
+    end
+  else
+    cron "#{ node.name }_#{ new_resource.role_name }_backup" do
+      action :delete
+    end
+  end
+
+  node.set["setup_#{ node.name }_#{ new_resource.role_name }_backup"] = true
 end
 
 def install_inline_packages

@@ -46,7 +46,7 @@ node['TheCheftacularCookbook']['graphite']['storage_schemas'].each_pair do |sche
       graphite_storage_schema "#{ schema }_#{ schema_name }" do
         config ({
           pattern: schema_hash['pattern'].gsub('SCHEMA_NAME', schema),
-          retentions: schema_hash['retensions']
+          retentions: schema_hash['retentions']
         })
       end
     end
@@ -54,7 +54,7 @@ node['TheCheftacularCookbook']['graphite']['storage_schemas'].each_pair do |sche
     graphite_storage_schema schema_name do
       config ({
         pattern: schema_hash['pattern'],
-        retentions: schema_hash['retensions']
+        retentions: schema_hash['retentions']
       })
     end
   end
@@ -138,7 +138,7 @@ node.set['grafana']['graphite_server']   = '127.0.0.1'
 node.set['grafana']['graphite_port']     = 8080
 node.set['grafana']['graphite_user']     = 'graphite'
 node.set['grafana']['graphite_password'] = node['grafana']['admin_password']
-node.set['grafana']['user']              = 'grafana'
+node.set['grafana']['user']              = 'graphite'
 node.set['grafana']['webserver_listen']  = node['ipaddress']
 node.set['grafana']['webserver_port']    = node['roles'].include?('https') ? 443        : 80
 node.set['grafana']['webserver_scheme']  = node['roles'].include?('https') ? 'https://' : 'http://'

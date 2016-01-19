@@ -34,4 +34,13 @@ end
 
 include_recipe "TheCheftacularCookbook::deploy_ssh_setup"
 include_recipe "TheCheftacularCookbook::attribute_toggles"
-include_recipe "rackspacecloud" if node['cloud'] == 'rackspace'
+
+if node['cheftacular']['preferred_cloud'] == 'rackspace'
+  #this fixes issue with mime-types 3.0 (and mime-types-data) requiring ruby >= 2.0.0
+  chef_gem "mime-types" do
+    version '2.6.2'
+    action :install
+  end
+  
+  include_recipe "rackspacecloud"
+end

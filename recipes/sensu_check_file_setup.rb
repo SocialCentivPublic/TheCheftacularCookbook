@@ -56,6 +56,7 @@ file_plugin_arr = [
   { name: 'cpu-pcnt-usage-metrics.rb',            location: 'thecheftacularcookbook' },
   { name: 'haproxy-metrics.rb',                   location: 'thecheftacularcookbook' },
   { name: 'cleanup-chef-node.rb',                 location: 'thecheftacularcookbook' },
+  { name: 'cleanup-process.rb',                   location: 'thecheftacularcookbook' }
 ]
 
 sudo_commands = []
