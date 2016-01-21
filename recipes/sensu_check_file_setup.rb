@@ -56,7 +56,8 @@ file_plugin_arr = [
   { name: 'cpu-pcnt-usage-metrics.rb',            location: 'thecheftacularcookbook' },
   { name: 'haproxy-metrics.rb',                   location: 'thecheftacularcookbook' },
   { name: 'cleanup-chef-node.rb',                 location: 'thecheftacularcookbook' },
-  { name: 'cleanup-process.rb',                   location: 'thecheftacularcookbook' }
+  { name: 'cleanup-process.rb',                   location: 'thecheftacularcookbook' },
+  { name: 'check-url.rb',                         location: 'thecheftacularcookbook' }
 ]
 
 sudo_commands = []
@@ -87,6 +88,7 @@ sudo_commands << "/usr/sbin/service"
 sudo_commands << "/opt/sensu/embedded/bin/ruby"
 sudo_commands << "/usr/bin/chef-client"
 sudo_commands << "/bin/kill"
+sudo_commands << "/usr/bin/pkill"
 sudo_commands << node['TheCheftacularCookbook']['sensu']['custom_sensu_sudo_commands']
 
 sudo "sensu" do

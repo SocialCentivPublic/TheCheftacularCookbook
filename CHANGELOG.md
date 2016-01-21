@@ -1,3 +1,7 @@
+## 1.1.5
+
+* Added check-url.rb sensu plugin check
+
 ## 1.1.4
 
 * Fixed runtime error where the database hash for minibackup generation is wrong

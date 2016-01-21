@@ -3,7 +3,7 @@ maintainer       'SocialCentiv'
 maintainer_email 'louis@socialcentiv.com'
 license          'All Rights Reserved'
 description      'Installs and configures various environments'
-version          '1.1.4'
+version          '1.1.5'
 
 depends 'ohai'
 depends 'build-essential'
