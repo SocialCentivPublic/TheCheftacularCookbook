@@ -1,3 +1,7 @@
+## 1.1.6
+
+* Fixed issue in libraries/helpers.rb, if environments_to_backup was not set, it would error.
+
 ## 1.1.5
 
 * Added check-url.rb sensu plugin check

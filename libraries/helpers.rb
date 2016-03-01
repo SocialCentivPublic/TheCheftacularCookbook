@@ -158,7 +158,7 @@ module TheCheftacularCookbook
 
     def trigger_backups_for_repo? role_name
       return false unless repo_hash(role_name).has_key?('backup_gem_backups')
-      return false unless repo_hash(role_name)['backup_gem_backups']['backup_in_environments'].include?(node.chef_environment)
+      return false     if repo_hash(role_name)['backup_gem_backups'].has_key?('backup_in_environments') && !repo_hash(role_name)['backup_gem_backups']['backup_in_environments'].include?(node.chef_environment)
       return false     if repo_hash(role_name)['backup_gem_backups'].has_key?('active') && !repo_hash(role_name)['backup_gem_backups']['active']
       return true      if node['setup_#{ node.name }_#{ role_name }_backup']
       
