@@ -67,8 +67,17 @@ module TheCheftacularCookbook
       return_hash
     end
 
-    def get_current_applications mode='array', ret_hash={}
+    def get_current_applications restrict_to={}, mode='array', ret_hash={}
       node['loaded_applications'].each_key do |app_role_name|
+        unless restrict_to.empty?
+          skip = false
+          restrict_to.each_pair do |key, val|
+            skip = true if repo_hash(app_role_name)[key] == val
+          end
+
+          next if skip
+        end
+
         ret_hash[repo_hash(app_role_name)['repo_name']] = repo_hash(app_role_name)
       end
 

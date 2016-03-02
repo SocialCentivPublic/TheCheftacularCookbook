@@ -36,6 +36,22 @@ node['loaded_applications'].each_key do |app_role_name|
     "
 end
 
+node['loaded_applications'].each_key do |app_role_name|
+  next unless has_repo_hash?(app_role_name)
+  next unless repo_hash(app_role_name)['database'] == 'mongodb'
+
+  db_name = repo_hash(app_role_name).has_key?('short_database_name') ? repo_hash(app_role_name)['short_database_name'] : repo_hash(app_role_name)['repo_name']
+
+  db_string << "database MongoDB, :#{ db_name } do |db|
+      db.name = '#{ repo_hash(app_role_name)['repo_name'] }'
+      db.username = '#{ repo_hash(app_role_name)['application_database_user'] }'
+      db.host = 'localhost'
+      db.password = '#{ Chef::EncryptedDataBagItem.load( node.chef_environment,"chef_passwords", node['secret']).to_hash["mongo_pass"] }'
+    end
+
+    "
+end
+
 backup_nodes.each do |serv_hash|
   next if serv_hash.empty?
   store_with_string << "store_with SCP, :#{ serv_hash['name'] } do |server|

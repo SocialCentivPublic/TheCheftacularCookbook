@@ -1,3 +1,7 @@
+## 1.2.0
+
+* Added mongodb as a possible backup source and setup mongodb to hook into the db_primary if various settings are set
+
 ## 1.1.6
 
 * Fixed issue in libraries/helpers.rb, if environments_to_backup was not set, it would error.

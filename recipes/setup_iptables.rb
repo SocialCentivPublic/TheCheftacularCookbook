@@ -75,6 +75,11 @@ simple_iptables_rule "graylog2_accept" do
   jump "ACCEPT"
 end if node['roles'].include?(role_maps['database'])
 
+simple_iptables_rule "mongodb_accept" do
+  rule "-i eth1 --proto tcp --dport 27017"
+  jump "ACCEPT"
+end if node['roles'].include?(role_maps['mongodb'])
+
 ############################################## DROP INTERNET PORTS ############################################
 
 simple_iptables_rule "graylog2_drop" do
@@ -98,6 +103,11 @@ simple_iptables_rule "graylog2_drop" do
   rule [ "-i eth0 --proto tcp --dport 12900" ]
   jump "DROP"
 end if node['roles'].include?(role_maps['graylog2_server'])
+
+simple_iptables_rule "mongodb_drop" do
+  rule "-i eth1 --proto tcp --dport 27017"
+  jump "DROP"
+end if node['roles'].include?(role_maps['mongodb'])
 
 simple_iptables_rule "system_log" do
   rule "--match limit --limit 5/min --jump LOG --log-prefix \"iptables denied: \" --log-level 7"

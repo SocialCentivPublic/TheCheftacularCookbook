@@ -30,6 +30,7 @@ module TheCheftacularCookbook
       ret_hash['database_master']             = database_master_to_hash
       ret_hash['key_data']                    = Chef::EncryptedDataBagItem.load( 'default', 'authentication', node['secret']).to_hash
       ret_hash['pg_pass']                     = Chef::EncryptedDataBagItem.load( node.chef_environment, 'chef_passwords', node['secret'])["pg_pass"] if mode =~ /ruby_on_rails/
+      ret_hash['mongo_pass']                  = Chef::EncryptedDataBagItem.load( node.chef_environment, 'chef_passwords', node['secret'])["mongo_pass"] if repo_hash(role_name)['sub_stack'] =~ /meteor/ 
       ret_hash['local_db_dn']                 = 'local.db.' + data_bag_item( node.chef_environment, 'config').to_hash[node.chef_environment]['tld']
       ret_hash['db_master_node']              = node['ipaddress'] == ret_hash['database_master']['public'] ? 'localhost' : ret_hash['local_db_dn']
       ret_hash['db_master_node']              = 'localhost' if node['roles'].include?('sensu_build_db') || node['roles'].include?('db_slave') #build servers
@@ -48,7 +49,6 @@ module TheCheftacularCookbook
       ret_hash['puma_pg_worker_boot']         = "require \"active_record\"\n" +
           "  ActiveRecord::Base.connection.disconnect! rescue ActiveRecord::ConnectionNotEstablished\n" +
           "  ActiveRecord::Base.establish_connection(YAML.load_file(\"#{ ret_hash['current_path'] }/config/database.yml\")[\"#{ node['environment_name'] }\"])"
-
 
       ret_hash
     end
