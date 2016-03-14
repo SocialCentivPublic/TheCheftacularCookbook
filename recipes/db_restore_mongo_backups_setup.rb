@@ -11,7 +11,7 @@ end
 cron_commands = [
   "ruby /root/backup_management.rb /mnt/postgresbackups/backups " +
   "#{ node['environment_name'] } #{ get_current_applications({'database' => 'postgresql'}).join(',') } " +
-  "#{ Chef::EncryptedDataBagItem.load( node.chef_environment, 'chef_passwords', node['secret']).to_hash["mongo_pass"] } mongodb" +
+  "#{ Chef::EncryptedDataBagItem.load( node.chef_environment, 'chef_passwords', node['secret']).to_hash["mongo_pass"] } mongodb " +
   "> /root/restore.log 2>&1"
 ]
 

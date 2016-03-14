@@ -8,7 +8,7 @@ chef_gem "backup" do
   version node['backup']['version']
 end
 
-backup_nodes, store_with_string, db_string, long_term_backup_nodes = [], '', '', []
+backup_nodes, store_with_string, db_string, slack_string, long_term_backup_nodes = [], '', '', '', []
 
 search(:node, "receive_backups:*") do |n|
   backup_nodes << address_hash_from_node_name(scrub_chef_environments_from_string(n['hostname'])) if n['receive_backups']
@@ -95,7 +95,7 @@ if node['TheCheftacularCookbook']['sensu']['slack_handlers']['slack_critical'].h
 end
 
 backup_model :main_backup do
-  description "Back up postgres production database"
+  description "Back up production databases"
 
   definition <<-DEF
 

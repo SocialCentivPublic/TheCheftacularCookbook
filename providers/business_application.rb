@@ -174,7 +174,7 @@ def initialize_nodejs_application
 
 
       execute_command = "node #{ ops_dir }/bundle/main.js"
-      env_vars        = ['PORT=8080', "ROOT_URL=http://#{ root_url }"
+      env_vars        = ['PORT=8080', "ROOT_URL=http://#{ root_url }"]
       env_vars       << if repo_hash(new_resource.role_name).has_key?('db_primary_host_role')
                           "MONGO_URL=mongodb://#{ app_hash['db_user'] }:#{ app_hash['mongo_pass'] }@#{ app_hash['local_db_dn'] }:27017/#{ app_hash['db_name'] }"
                         else

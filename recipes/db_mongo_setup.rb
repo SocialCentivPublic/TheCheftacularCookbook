@@ -22,12 +22,27 @@ node['loaded_applications'].each_key do |app_role_name|
     'username' => repo_hash(app_role_name)['application_database_user'],
     'password' => Chef::EncryptedDataBagItem.load( node.chef_environment, 'chef_passwords', node['secret']).to_hash["mongo_pass"],
     'roles'    => %w(readWrite),
-    'database' => repo_h['repo_name']
+    'database' => repo_hash(app_role_name)['repo_name']
   }
 end
 
 node.set['mongodb']['users'] = mongodb_users
 
-node.set['mongodb']['config']['authorization'] = 'enabled'
+#Remember to remove this from the node itself when mongodb cookbook is updated to the yaml style configs
+node.set['mongodb']['config']['auth'] = true
+node.set['mongodb']['ruby_gems'] = {
+  :mongo => '1.12.5',
+  :bson_ext => nil
+}
 
 include_recipe "mongodb"
+include_recipe "mongodb::mongo_gem"
+
+execute "chown -R mongodb:nogroup #{ node['mongodb']['config']['dbpath'] }"
+execute "chown -R mongodb:mongodb #{ node['mongodb']['config']['logpath'] }"
+
+service 'mongodb' do
+  action :restart
+end
+
+include_recipe "mongodb::user_management"

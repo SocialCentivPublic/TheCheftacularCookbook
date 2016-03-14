@@ -43,7 +43,7 @@ puts "[#{ Time.now.strftime('%Y-%m-%d %l:%M:%S %P') }] Starting backup unpacking
 
 puts "[#{ Time.now.strftime('%Y-%m-%d %l:%M:%S %P') }] Starting tar extraction for #{ backup_location }/main_backup/#{ target_dir }/main_backup.tar"
 
-`tar xvf #{ backup_location }/main_backup/#{ target_dir }/main_backup.tar -C #{ backup_location }/main_backup/#{ target_dir }`
+`tar -xvf #{ backup_location }/main_backup/#{ target_dir }/main_backup.tar -C #{ backup_location }/main_backup/#{ target_dir }`
 
 sleep 30
 
@@ -84,7 +84,9 @@ Dir.foreach("#{ backup_location }/main_backup/#{ target_dir }/main_backup/databa
     puts "[#{ Time.now.strftime('%Y-%m-%d %l:%M:%S %P') }] Starting VACUUM ANALYZE for #{ target_database }"
     puts `su - postgres -c "psql #{ target_database }_#{ environment } -c 'VACUUM VERBOSE ANALYZE;'"`
   when 'mongodb'
-    `mongorestore --dbpath /mnt/mongo/mongodb --db #{ target_database } --drop #{ backup_location }/main_backup/#{ target_dir }/main_backup/databases/#{ gzipped_file.gsub('.gz','') }`
+    `tar -xvf #{ backup_location }/main_backup/#{ target_dir }/main_backup.tar -C #{ backup_location }/main_backup/#{ target_dir }/main_backup/databases/#{ gzipped_file.gsub('.gz','') }`
+
+    puts `mongorestore --dbpath /mnt/mongo/mongodb --db #{ target_database } --drop #{ backup_location }/main_backup/#{ target_dir }/main_backup/databases/#{ gzipped_file.gsub('.gz','').gsub('.tar','') }/#{ target_database }`
   end
 end
 

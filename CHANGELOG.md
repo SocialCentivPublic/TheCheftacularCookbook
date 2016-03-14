@@ -1,3 +1,7 @@
+## 1.2.1
+
+* Many major fixes to the mongodb on db_primary setup. Along with new cheftacular checks that will see if this environment state is desired.
+
 ## 1.2.0
 
 * Added mongodb as a possible backup source and setup mongodb to hook into the db_primary if various settings are set

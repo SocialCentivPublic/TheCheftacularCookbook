@@ -2,7 +2,7 @@ mount_name  = "#{ node['hostname'].gsub('-','_') }_mongo"
 volume_hash = node['TheCheftacularCookbook']['volume_config']['mongodb']
 
 sub_directories_hash = {
-  "mongodb" => { mode: '755', recursive: true }
+  "mongodb" => { mode: '755' }
 }
 
 TheCheftacularCookbook_business_volume mount_name do
