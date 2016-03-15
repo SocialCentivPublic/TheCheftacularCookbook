@@ -6,7 +6,7 @@ environment      = ARGV[1]
 databases        = ARGV[2].split(',')
 db_pass          = ARGV[3]
 db_user          = ARGV[4]
-mode             = ARGV[5].downcase
+mode             = ARGV[5]
 output           = []
 timestamp_dirs   = []
 check_dirs       = []
@@ -56,6 +56,8 @@ Dir.foreach("#{ backup_location }/main_backup/#{ target_dir }/main_backup/databa
     target_database = database.strip if gzipped_file.include?(database.split('-').first.strip)
   end
 
+  next if target_database == ''
+
   if mode =~ /postgresql/
     puts "[#{ Time.now.strftime('%Y-%m-%d %l:%M:%S %P') }] Starting schema removal for #{ target_database }"
     schema_commands.each do |cmnd|
@@ -79,14 +81,14 @@ Dir.foreach("#{ backup_location }/main_backup/#{ target_dir }/main_backup/databa
 
   case mode
   when 'postgresql'
-    `PGPASSWORD=#{ pg_pass } pg_restore --verbose --no-acl --no-owner -j 4 -h localhost -U #{ db_user } -d #{ target_database }_#{ environment } #{ backup_location }/main_backup/#{ target_dir }/main_backup/databases/#{ gzipped_file.gsub('.gz','') }`
+    `PGPASSWORD=#{ db_pass } pg_restore --verbose --no-acl --no-owner -j 4 -h localhost -U #{ db_user } -d #{ target_database }_#{ environment } #{ backup_location }/main_backup/#{ target_dir }/main_backup/databases/#{ gzipped_file.gsub('.tar','') }`
 
     puts "[#{ Time.now.strftime('%Y-%m-%d %l:%M:%S %P') }] Starting VACUUM ANALYZE for #{ target_database }"
     puts `su - postgres -c "psql #{ target_database }_#{ environment } -c 'VACUUM VERBOSE ANALYZE;'"`
   when 'mongodb'
-    `tar -xvf #{ backup_location }/main_backup/#{ target_dir }/main_backup.tar -C #{ backup_location }/main_backup/#{ target_dir }/main_backup/databases/#{ gzipped_file.gsub('.gz','') }`
+    puts `tar -xvf #{ backup_location }/main_backup/#{ target_dir }/main_backup/databases/#{ gzipped_file } -C #{ backup_location }/main_backup/#{ target_dir }/main_backup/databases/#{ gzipped_file }`
 
-    puts `mongorestore --dbpath /mnt/mongo/mongodb --db #{ target_database } --drop #{ backup_location }/main_backup/#{ target_dir }/main_backup/databases/#{ gzipped_file.gsub('.gz','').gsub('.tar','') }/#{ target_database }`
+    puts `mongorestore --dbpath /mnt/mongo/mongodb --username #{ db_user } --password #{ db_pass } --db #{ target_database } --drop #{ backup_location }/main_backup/#{ target_dir }/main_backup/databases/#{ gzipped_file.gsub('.tar','') }/#{ target_database }`
   end
 end
 

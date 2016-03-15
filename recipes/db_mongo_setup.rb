@@ -21,7 +21,7 @@ node['loaded_applications'].each_key do |app_role_name|
   mongodb_users << {
     'username' => repo_hash(app_role_name)['application_database_user'],
     'password' => Chef::EncryptedDataBagItem.load( node.chef_environment, 'chef_passwords', node['secret']).to_hash["mongo_pass"],
-    'roles'    => %w(readWrite),
+    'roles'    => ["readWrite", "dbAdmin", "userAdmin", "backup", "restore"],
     'database' => repo_hash(app_role_name)['repo_name']
   }
 end

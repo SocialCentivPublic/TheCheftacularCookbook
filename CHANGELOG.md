@@ -1,3 +1,7 @@
+## 1.2.2
+
+* Tweaks to the backup_management.rb to make it compatible with the install
+
 ## 1.2.1
 
 * Many major fixes to the mongodb on db_primary setup. Along with new cheftacular checks that will see if this environment state is desired.
