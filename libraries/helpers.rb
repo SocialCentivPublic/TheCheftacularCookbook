@@ -72,7 +72,7 @@ module TheCheftacularCookbook
         unless restrict_to.empty?
           skip = false
           restrict_to.each_pair do |key, val|
-            skip = true if repo_hash(app_role_name)[key] == val
+            skip = true if repo_hash(app_role_name)[key] != val
           end
 
           next if skip

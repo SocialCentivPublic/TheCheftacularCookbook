@@ -3,7 +3,7 @@ maintainer       'SocialCentiv'
 maintainer_email 'louis@socialcentiv.com'
 license          'All Rights Reserved'
 description      'Installs and configures various environments'
-version          '1.2.2'
+version          '1.3.1'
 
 depends 'ohai'
 depends 'build-essential'
@@ -41,6 +41,19 @@ depends 'wordpress'
 depends 'application_ruby'
 
 #depends 'rails_application'
+
+#logging
+depends 'kibana_lwrp', '< 3.0.0'
+depends 'beaver'
+depends 'libarchive'
+depends 'poise', '< 2.0.0'
+depends 'rsyslog'
+depends 'elkstack'
+depends 'rackspace_monitoring'
+depends 'rsyslog'
+depends 'firewall', '< 2.0.0'
+depends 'line'
+depends 'newrelic_meetme_plugin'
 
 supports 'amazon'
 supports 'debian'

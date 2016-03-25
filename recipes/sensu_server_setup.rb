@@ -42,7 +42,8 @@ template "/etc/nginx/sites-available/default" do
     name:       "sensu.#{ data_bag_item('production', 'config').to_hash['production']['tld'] }",
     base_name:  'sensu',
     log_dir:    node['nginx']['log_dir'],
-    target_url: 'http://localhost:3000'
+    target_url: 'http://localhost:3000',
+    use_basic_auth: false
   )
   if ::File.exists?("#{node['nginx']['dir']}/sites-enabled/default")
     notifies :reload, 'service[nginx]'

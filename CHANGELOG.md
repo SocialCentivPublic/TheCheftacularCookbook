@@ -1,3 +1,7 @@
+## 1.3.1
+
+* Bunch of logstash installation recipes
+
 ## 1.2.2
 
 * Tweaks to the backup_management.rb to make it compatible with the install

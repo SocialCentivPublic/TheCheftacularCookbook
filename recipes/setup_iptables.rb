@@ -36,7 +36,7 @@ simple_iptables_rule "redis_accept" do
   rule [ "--proto tcp --dport 4567",
          "--proto tcp --dport 6379" ]
   jump "ACCEPT"
-end if node['roles'].include?(role_maps['sensu_server']) || node['roles'].include?(role_maps['sensu_clients'])
+end if node['roles'].include?(role_maps['sensu_server']) || node['roles'].include?(role_maps['sensu_client'])
 
 simple_iptables_rule "rabbitmq_accept" do
   rule [ "--proto tcp --dport 5671",
@@ -76,9 +76,23 @@ simple_iptables_rule "graylog2_accept" do
 end if node['roles'].include?(role_maps['database'])
 
 simple_iptables_rule "mongodb_accept" do
-  rule "-i eth1 --proto tcp --dport 27017"
+  rule ["-i eth1 --proto tcp --dport 27017"]
   jump "ACCEPT"
 end if node['roles'].include?(role_maps['mongodb'])
+
+simple_iptables_rule "logstash_accept" do
+  rule ["-i eth1 --proto tcp --dport 9292",
+        "-i eth1 --proto tcp --dport 9200"]
+  jump "ACCEPT"
+end if node['roles'].include?(role_maps['logstash_server'])
+
+simple_iptables_rule "logstash_agent_accept" do
+  rule ["-i eth1 --proto tcp --dport 5959",
+        "-i eth1 --proto tcp --dport 5960",
+        "-i eth1 --proto tcp --dport 5961"]
+  jump "ACCEPT"
+end if node['roles'].include?(role_maps['logstash_client'])
+
 
 ############################################## DROP INTERNET PORTS ############################################
 
@@ -105,9 +119,23 @@ simple_iptables_rule "graylog2_drop" do
 end if node['roles'].include?(role_maps['graylog2_server'])
 
 simple_iptables_rule "mongodb_drop" do
-  rule "-i eth1 --proto tcp --dport 27017"
+  rule ["-i eth0 --proto tcp --dport 27017"]
   jump "DROP"
 end if node['roles'].include?(role_maps['mongodb'])
+
+simple_iptables_rule "logstash_drop" do
+  rule ["-i eth0 --proto tcp --dport 9292",
+        "-i eth0 --proto tcp --dport 9200"]
+  jump "DROP"
+end if node['roles'].include?(role_maps['logstash_server'])
+
+simple_iptables_rule "logstash_agent_drop" do
+  rule ["-i eth0 --proto tcp --dport 5959",
+        "-i eth0 --proto tcp --dport 5960",
+        "-i eth0 --proto tcp --dport 5961"]
+  jump "DROP"
+end if node['roles'].include?(role_maps['logstash_client'])
+
 
 simple_iptables_rule "system_log" do
   rule "--match limit --limit 5/min --jump LOG --log-prefix \"iptables denied: \" --log-level 7"
