@@ -7,7 +7,9 @@ cookbook_file "/root/backup_management.rb" do
 end
 
 cron_commands = [
-  "ruby /root/backup_management.rb /mnt/postgresbackups/backups #{ node['environment_name'] } #{ get_current_applications.join(',') } #{ node['postgresql']['password']['postgres'] } postgres > /root/restore.log 2>&1"
+  "ruby /root/backup_management.rb /mnt/postgresbackups/backups " +
+  "#{ node['environment_name'] } #{ get_current_applications({'database' => 'postgresql'}).join(',') } " +
+  "#{ node['postgresql']['password']['postgres'] } postgres postgresql > /root/restore.log 2>&1"
 ]
 
 if data_bag_item( node.chef_environment, 'config').to_hash[node['environment_name']]['restore_backups']

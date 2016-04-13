@@ -1,0 +1,12 @@
+input {
+  file {
+    path => ["<%= @input_file_name %>"]
+    type => ["<%= @input_file_type %>"]
+  }
+}
+
+filter {
+  mutate {
+    replace => [ "input_chef_environment", "<%= @chef_environment %>" ]
+  }
+}

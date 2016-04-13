@@ -1,3 +1,35 @@
+## 1.4.0
+
+* Finish up all logstash support and integrations.
+
+## 1.3.2
+
+* More Improvements to logstash recipes
+
+## 1.3.1
+
+* Bunch of logstash installation recipes
+
+## 1.2.2
+
+* Tweaks to the backup_management.rb to make it compatible with the install
+
+## 1.2.1
+
+* Many major fixes to the mongodb on db_primary setup. Along with new cheftacular checks that will see if this environment state is desired.
+
+## 1.2.0
+
+* Added mongodb as a possible backup source and setup mongodb to hook into the db_primary if various settings are set
+
+## 1.1.6
+
+* Fixed issue in libraries/helpers.rb, if environments_to_backup was not set, it would error.
+
+## 1.1.5
+
+* Added check-url.rb sensu plugin check
+
 ## 1.1.4
 
 * Fixed runtime error where the database hash for minibackup generation is wrong

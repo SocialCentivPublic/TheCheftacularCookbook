@@ -28,7 +28,7 @@ node.set['uchiwa']['api'] = [
 ]
 
 include_recipe "uchiwa"
-include_recipe "nginx_ssl_setup" if node['roles'].include?('https')
+include_recipe "TheCheftacularCookbook::nginx_ssl_setup" if node['roles'].include?('https')
 include_recipe "nginx"
 
 include_recipe "TheCheftacularCookbook::sensu_gems"
@@ -42,7 +42,8 @@ template "/etc/nginx/sites-available/default" do
     name:       "sensu.#{ data_bag_item('production', 'config').to_hash['production']['tld'] }",
     base_name:  'sensu',
     log_dir:    node['nginx']['log_dir'],
-    target_url: 'http://localhost:3000'
+    target_url: 'http://localhost:3000',
+    use_basic_auth: false
   )
   if ::File.exists?("#{node['nginx']['dir']}/sites-enabled/default")
     notifies :reload, 'service[nginx]'
@@ -83,3 +84,5 @@ include_recipe "TheCheftacularCookbook::sensu_server_cron_setup"
 include_recipe "sensu::server_service"
 
 include_recipe "sensu::api_service"
+
+execute "chmod 755 /var/log/sensu"

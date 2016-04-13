@@ -67,8 +67,17 @@ module TheCheftacularCookbook
       return_hash
     end
 
-    def get_current_applications mode='array', ret_hash={}
+    def get_current_applications restrict_to={}, mode='array', ret_hash={}
       node['loaded_applications'].each_key do |app_role_name|
+        unless restrict_to.empty?
+          skip = false
+          restrict_to.each_pair do |key, val|
+            skip = true if repo_hash(app_role_name)[key] != val
+          end
+
+          next if skip
+        end
+
         ret_hash[repo_hash(app_role_name)['repo_name']] = repo_hash(app_role_name)
       end
 
@@ -81,10 +90,16 @@ module TheCheftacularCookbook
     end
 
     #TODO refactor to better solution
-    def database_master_to_hash
+    def database_master_to_hash(env='default')
+      env = node.chef_environment if env == 'default'
+
+      if env != 'default'
+        node.set['addresses'][env] = data_bag_item(env, 'addresses')['addresses']
+      end
+
       database_master_hash = {}
 
-      node['addresses'][node.chef_environment].each do |serv_hash|
+      node['addresses'][env].each do |serv_hash|
         next unless serv_hash['descriptor'].include?('dbmaster') 
 
         database_master_hash = serv_hash
@@ -158,7 +173,7 @@ module TheCheftacularCookbook
 
     def trigger_backups_for_repo? role_name
       return false unless repo_hash(role_name).has_key?('backup_gem_backups')
-      return false unless repo_hash(role_name)['backup_gem_backups']['backup_in_environments'].include?(node.chef_environment)
+      return false     if repo_hash(role_name)['backup_gem_backups'].has_key?('backup_in_environments') && !repo_hash(role_name)['backup_gem_backups']['backup_in_environments'].include?(node.chef_environment)
       return false     if repo_hash(role_name)['backup_gem_backups'].has_key?('active') && !repo_hash(role_name)['backup_gem_backups']['active']
       return true      if node['setup_#{ node.name }_#{ role_name }_backup']
       

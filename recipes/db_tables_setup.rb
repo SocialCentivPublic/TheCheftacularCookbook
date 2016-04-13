@@ -2,9 +2,6 @@
 
 include_recipe "database::postgresql"
 
-#one-off packages
-package "pgBadger"
-
 primary_connection_info = {}
 
 node['loaded_applications'].each_key do |app_role_name|
@@ -29,7 +26,6 @@ node.set['postgres_connection_info'] = {
 }
 
 primary_connection_info.each_pair do |user, user_hash|
-
   postgresql_database_user user do
     connection node['postgres_connection_info']
 

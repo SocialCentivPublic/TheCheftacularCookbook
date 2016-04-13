@@ -95,7 +95,7 @@ end
 def initialize_nodejs_application
   app_hash = return_application_defaults_as_hash(new_resource.name, new_resource.type, new_resource.role_name)
 
-  if node['cheftacular']['repositories'][new_resource.role_name]['sub_stack'] == 'meteor'
+  if repo_hash(new_resource.role_name)['sub_stack'] == 'meteor'
     execute "install_meteor" do
       command "curl https://install.meteor.com/ | sh"
       not_if  "which meteor"
@@ -103,7 +103,7 @@ def initialize_nodejs_application
 
     execute "chown #{ node['cheftacular']['deploy_user'] }:#{ node['cheftacular']['deploy_user'] } -R /home/#{ node['cheftacular']['deploy_user'] }/.meteor"
 
-    include_recipe 'mongodb'
+    include_recipe 'mongodb' unless repo_hash(new_resource.role_name).has_key?('db_primary_host_role')
   end
 
   include_recipe 'nodejs'
@@ -171,8 +171,15 @@ def initialize_nodejs_application
         root_url = server_hash['dn']
       end
 
+
+
       execute_command = "node #{ ops_dir }/bundle/main.js"
-      env_vars        = ['PORT=8080', 'MONGO_URL=mongodb://localhost:27017/mongodb', "ROOT_URL=http://#{ root_url }"]
+      env_vars        = ['PORT=8080', "ROOT_URL=http://#{ root_url }"]
+      env_vars       << if repo_hash(new_resource.role_name).has_key?('db_primary_host_role')
+                          "MONGO_URL=mongodb://#{ app_hash['db_user'] }:#{ app_hash['mongo_pass'] }@#{ app_hash['local_db_dn'] }:27017/#{ app_hash['db_name'] }"
+                        else
+                          'MONGO_URL=mongodb://localhost:27017/mongodb'
+                        end
     end
   end
 
@@ -234,7 +241,7 @@ def initialize_rails_application
 
     rails do
       bundle_command                  node['bundle_command']
-      environment_name                node['environment_name']
+      environment_name                app_hash['runtime_environment']
       bundler                         true
       bundle_options                  '--jobs 2' if app_hash['run_web']
       bundler_with_groups             ['test'] if app_hash['is_sensu_build']
@@ -272,12 +279,12 @@ def initialize_rails_application
   end
 
   #activate if cleanup becomes a problem
-  cron "cleanup_#{ new_resource.name }_#{ node['environment_name'] }.log" do
+  cron "cleanup_#{ new_resource.name }_#{ app_hash['runtime_environment'] }.log" do
     minute  "0"
     hour    "0"
     day     "1"
     user    node['cheftacular']['deploy_user']
-    command "tail -5000 #{ app_hash['current_path'] }/log/#{ node['environment_name'] }.log > #{ app_hash['current_path'] }/log/#{ node['environment_name'] }.log"
+    command "tail -5000 #{ app_hash['current_path'] }/log/#{ app_hash['runtime_environment'] }.log > #{ app_hash['current_path'] }/log/#{ app_hash['runtime_environment'] }.log"
   end if node[new_resource.name]['run_log_cleanup']
 
   execute 'restart_puma_rails_apps' do

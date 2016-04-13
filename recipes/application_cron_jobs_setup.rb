@@ -13,11 +13,20 @@ node['loaded_applications'].each_key do |app_role_name|
 
     true_command = true_command.gsub('CURRENT_PATH', current_application_location(app_role_name)).gsub('CURRENT_ENVIRONMENT', node['environment_name'])
 
+    state = if !cron_hash.has_key?('active')
+              true
+            elsif cron_hash.has_key?('active') && cron_hash['active'] == false
+              false
+            else
+              true
+            end
+
     cron cron_name do
       minute   cron_hash['minute']
       hour     cron_hash['hour']
       user     cron_hash.has_key?('user') ? cron_hash['user'] : node['cheftacular']['deploy_user']
       command  true_command
+      action   state ? :create : :delete
     end
   end
 end

@@ -145,7 +145,7 @@ node.set['grafana']['webserver_scheme']  = node['roles'].include?('https') ? 'ht
 
 node.set['grafana']['nginx']['template_cookbook'] = 'TheCheftacularCookbook'
 
-include_recipe "nginx_ssl_setup" if node['roles'].include?('https')
+include_recipe "TheCheftacularCookbook::nginx_ssl_setup" if node['roles'].include?('https')
 include_recipe "grafana"
 
 htpasswd "/etc/nginx/.htpassword" do

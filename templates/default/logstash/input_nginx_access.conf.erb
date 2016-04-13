@@ -1,0 +1,28 @@
+
+input {
+  file {
+    path => "<%= @input_file_name %>"
+    type => "<%= @input_file_type %>"
+  }
+}
+
+
+filter {
+  if [type] == "<%= @input_file_type %>" {
+    grok {
+      match => { "message" => "%{NGINXACCESS}" }
+    }
+    date {
+      match => [ "timestamp" , "dd/MMM/YYYY:HH:mm:ss Z" ]
+    }
+    geoip {
+      source => "clientip"
+    }
+  }
+}
+
+filter {
+  mutate {
+    replace => [ "input_chef_environment", "<%= @chef_environment %>" ]
+  }
+}
