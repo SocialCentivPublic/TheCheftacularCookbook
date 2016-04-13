@@ -26,6 +26,12 @@ class CheckHTTP < Sensu::Plugin::Check::CLI
     :description => 'Should this use HTTPS?',
     :default => '0'
 
+  option :check_content,
+    :short => '-c CONTENT',
+    :long => '--check-content CONTENT',
+    :description => 'Check the content of the URL, Alerts if found',
+    :default => ''
+
   def run(response=nil)
     Timeout::timeout(5) {
       response = get(config[:base_url])
@@ -33,7 +39,13 @@ class CheckHTTP < Sensu::Plugin::Check::CLI
 
     if response.nil?
       puts "WARNING! NO RESPONSE IN 5 SECONDS OR SOME OTHER ISSUE FOR #{ config[:base_url] }"; exit 2
-    else
+    elsif !response.nil? && config[:check_content] != ''
+      if response.include?(config[:check_content])
+        puts "Queried #{ config[:base_url] } and found #{ config[:check_content] }!"; exit 2
+      else
+        puts "Queried #{ config[:base_url] } and did not find the undesired content. All is well."; exit 0
+      end
+    elsif !response.nil? && config[:check_content] == '' 
       puts "Queried #{ config[:base_url] } and obtained data. All is well."; exit 0
     end
   end

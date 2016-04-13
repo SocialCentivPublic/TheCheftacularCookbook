@@ -1,0 +1,24 @@
+input {
+  file {
+    path => "<%= @input_file_name %>"
+    type => "<%= @input_file_type %>"
+  }
+}
+
+
+filter {
+  if [type] == "<%= @input_file_type %>" {
+    json {
+      source => "message"
+    }
+    if ([message] =~ /publishing check request|determining stale clients|pruning check result aggregations/) {
+      drop{}
+    }
+  }
+}
+
+filter {
+  mutate {
+    replace => [ "input_chef_environment", "<%= @chef_environment %>" ]
+  }
+}

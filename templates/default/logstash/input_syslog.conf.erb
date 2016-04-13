@@ -1,0 +1,42 @@
+input {
+  tcp {
+    port => "<%= @input_syslog_port %>"
+    host => "<%= @input_syslog_host %>"
+    type => "syslog"
+  }
+}
+
+filter {
+  if [type] == "syslog" {
+    grok {
+      overwrite => "message"
+      match => [
+        "message",
+        "%{SYSLOGTIMESTAMP:timestamp} %{IPORHOST:host} (?:%{PROG:program}(?:\[%{POSINT:pid}\])?: )?%{GREEDYDATA:message}"
+      ]
+    }
+    mutate {
+      add_field => { "true_host" => "<%= @true_hostname %>" }
+    }
+    if ([program] =~ /delayed\-job\-misc|delayed\-job\-tweets/) {
+      drop{}
+    }
+    syslog_pri { }
+    date {
+      # season to taste for your own syslog format(s)
+      match => [
+        "timestamp",
+        "MMM  d HH:mm:ss",
+        "MMM dd HH:mm:ss",
+        "ISO8601"
+      ]
+    }
+  }
+}
+
+filter {
+  mutate {
+    replace => [ "input_chef_environment", "<%= @chef_environment %>" ]
+    replace => [ "output_chef_environment", "<%= @chef_environment %>" ]
+  }
+}

@@ -27,5 +27,10 @@ server {
     # WebSocket proxying - from http://nginx.org/en/docs/http/websocket.html
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection $connection_upgrade;
+
+    <% if !@use_basic_auth.nil? && @use_basic_auth -%>
+      auth_basic "Restricted Access";
+      auth_basic_user_file <%= node['nginx']['dir'] %>/.htpassword;
+    <% end %>
   }
 }

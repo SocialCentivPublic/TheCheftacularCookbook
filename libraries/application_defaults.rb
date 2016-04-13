@@ -30,6 +30,7 @@ module TheCheftacularCookbook
       ret_hash['database_master']             = database_master_to_hash
       ret_hash['key_data']                    = Chef::EncryptedDataBagItem.load( 'default', 'authentication', node['secret']).to_hash
       ret_hash['pg_pass']                     = Chef::EncryptedDataBagItem.load( node.chef_environment, 'chef_passwords', node['secret'])["pg_pass"] if mode =~ /ruby_on_rails/
+      ret_hash['mongo_pass']                  = Chef::EncryptedDataBagItem.load( node.chef_environment, 'chef_passwords', node['secret'])["mongo_pass"] if repo_hash(role_name)['sub_stack'] =~ /meteor/ 
       ret_hash['local_db_dn']                 = 'local.db.' + data_bag_item( node.chef_environment, 'config').to_hash[node.chef_environment]['tld']
       ret_hash['db_master_node']              = node['ipaddress'] == ret_hash['database_master']['public'] ? 'localhost' : ret_hash['local_db_dn']
       ret_hash['db_master_node']              = 'localhost' if node['roles'].include?('sensu_build_db') || node['roles'].include?('db_slave') #build servers
@@ -37,6 +38,7 @@ module TheCheftacularCookbook
       ret_hash['is_sensu_build']              = node['roles'].include?('sensu_build_db')
       ret_hash['db_user']                     = repo_hash(role_name)['application_database_user'] if repo_hash(role_name).has_key?('application_database_user')
       ret_hash['db_environment']              = node['environment_name']
+      ret_hash['runtime_environment']         = node['environment_name']
       ret_hash['db_name']                     = repo_hash(role_name).has_key?('use_other_repo_database') ? repo_hash(role_name)['use_other_repo_database'] : name
       ret_hash['db_attrs']                    = {}
       ret_hash['db_attrs']['template']        = 'template0' if node['roles'].include?('sensu_build_db')
@@ -45,10 +47,10 @@ module TheCheftacularCookbook
       ret_hash['repo_computed_url']           = "https://#{ ret_hash['key_data']["git_OAuth"] }@github.com/#{ ret_hash['repo_group'] }/#{ name }.git"
       ret_hash['custom_nginx_configs']        = repo_hash(role_name).has_key?('custom_nginx_configs') ? repo_hash(role_name)['custom_nginx_configs'] : []
       ret_hash                                = split_environment_setup(ret_hash)
+      ret_hash                                = override_setup(ret_hash, repo_hash(role_name)) if repo_hash(role_name).has_key?('db_env_node_bypass')
       ret_hash['puma_pg_worker_boot']         = "require \"active_record\"\n" +
           "  ActiveRecord::Base.connection.disconnect! rescue ActiveRecord::ConnectionNotEstablished\n" +
-          "  ActiveRecord::Base.establish_connection(YAML.load_file(\"#{ ret_hash['current_path'] }/config/database.yml\")[\"#{ node['environment_name'] }\"])"
-
+          "  ActiveRecord::Base.establish_connection(YAML.load_file(\"#{ ret_hash['current_path'] }/config/database.yml\")[\"#{ ret_hash['runtime_environment'] }\"])"
 
       ret_hash
     end
@@ -69,6 +71,28 @@ module TheCheftacularCookbook
       node.set[name]['repo_branch']           = test_branch
       app_hash['repo_branch']                 = test_branch
       node.force_override['environment_name'] = test_env
+
+      app_hash
+    end
+
+    def override_setup app_hash, _repo_hash
+      _repo_hash['db_env_node_bypass'].each_pair do |original_env, original_env_hash|
+        next if node.chef_environment != original_env
+
+        if _repo_hash['sub_stack'] =~ /meteor/ 
+          app_hash['mongo_pass'] = Chef::EncryptedDataBagItem.load( original_env_hash['environment_to_bypass_into'], 'chef_passwords', node['secret'])["mongo_pass"]
+        elsif _repo_hash['database'] =~ /postgresql/
+          app_hash['pg_pass'] = Chef::EncryptedDataBagItem.load( original_env_hash['environment_to_bypass_into'], 'chef_passwords', node['secret'])["pg_pass"]
+        end
+
+        app_hash['local_db_dn']         = 'local.db.' + data_bag_item( original_env_hash['environment_to_bypass_into'], 'config').to_hash[original_env_hash['environment_to_bypass_into']]['tld']
+        app_hash['database_master']     = database_master_to_hash(original_env_hash['environment_to_bypass_into'])
+        app_hash['db_master_node']      = node['ipaddress'] == app_hash['database_master']['public'] ? 'localhost' : app_hash['local_db_dn']
+        app_hash['db_environment']      = original_env_hash['environment_to_bypass_into']
+        app_hash['runtime_environment'] = original_env_hash['environment_to_bypass_into']
+      end
+
+      app_hash
     end
   end
 end

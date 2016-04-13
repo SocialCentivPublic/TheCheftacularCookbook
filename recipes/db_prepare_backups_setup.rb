@@ -8,7 +8,7 @@ chef_gem "backup" do
   version node['backup']['version']
 end
 
-backup_nodes, store_with_string, db_string, long_term_backup_nodes = [], '', '', []
+backup_nodes, store_with_string, db_string, slack_string, long_term_backup_nodes = [], '', '', '', []
 
 search(:node, "receive_backups:*") do |n|
   backup_nodes << address_hash_from_node_name(scrub_chef_environments_from_string(n['hostname'])) if n['receive_backups']
@@ -31,6 +31,22 @@ node['loaded_applications'].each_key do |app_role_name|
       db.host = 'localhost'
       db.password = '#{ Chef::EncryptedDataBagItem.load( node.chef_environment,"chef_passwords", node['secret']).to_hash["pg_pass"] }'
       db.additional_options = ['-Fc']
+    end
+
+    "
+end
+
+node['loaded_applications'].each_key do |app_role_name|
+  next unless has_repo_hash?(app_role_name)
+  next unless repo_hash(app_role_name)['database'] == 'mongodb'
+
+  db_name = repo_hash(app_role_name).has_key?('short_database_name') ? repo_hash(app_role_name)['short_database_name'] : repo_hash(app_role_name)['repo_name']
+
+  db_string << "database MongoDB, :#{ db_name } do |db|
+      db.name = '#{ repo_hash(app_role_name)['repo_name'] }'
+      db.username = '#{ repo_hash(app_role_name)['application_database_user'] }'
+      db.host = 'localhost'
+      db.password = '#{ Chef::EncryptedDataBagItem.load( node.chef_environment,"chef_passwords", node['secret']).to_hash["mongo_pass"] }'
     end
 
     "
@@ -79,7 +95,7 @@ if node['TheCheftacularCookbook']['sensu']['slack_handlers']['slack_critical'].h
 end
 
 backup_model :main_backup do
-  description "Back up postgres production database"
+  description "Back up production databases"
 
   definition <<-DEF
 

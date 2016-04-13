@@ -4,8 +4,9 @@ require 'time'
 backup_location  = ARGV[0]
 environment      = ARGV[1]
 databases        = ARGV[2].split(',')
-pg_pass          = ARGV[3]
+db_pass          = ARGV[3]
 db_user          = ARGV[4]
+mode             = ARGV[5]
 output           = []
 timestamp_dirs   = []
 check_dirs       = []
@@ -42,30 +43,34 @@ puts "[#{ Time.now.strftime('%Y-%m-%d %l:%M:%S %P') }] Starting backup unpacking
 
 puts "[#{ Time.now.strftime('%Y-%m-%d %l:%M:%S %P') }] Starting tar extraction for #{ backup_location }/main_backup/#{ target_dir }/main_backup.tar"
 
-`tar xvf #{ backup_location }/main_backup/#{ target_dir }/main_backup.tar -C #{ backup_location }/main_backup/#{ target_dir }`
+`tar -xvf #{ backup_location }/main_backup/#{ target_dir }/main_backup.tar -C #{ backup_location }/main_backup/#{ target_dir }`
 
 sleep 30
 
-Dir.foreach("#{ backup_location }/main_backup/#{ target_dir }/main_backup/databases") do |gzipped_sql_file|
-  next if gzipped_sql_file == '.' || gzipped_sql_file == '..'
+Dir.foreach("#{ backup_location }/main_backup/#{ target_dir }/main_backup/databases") do |gzipped_file|
+  next if gzipped_file == '.' || gzipped_file == '..'
 
   target_database = ""
 
   databases.each do |database|
-    target_database = database.strip if gzipped_sql_file.include?(database.split('-').first.strip)
+    target_database = database.strip if gzipped_file.include?(database.split('-').first.strip)
   end
 
-  puts "[#{ Time.now.strftime('%Y-%m-%d %l:%M:%S %P') }] Starting schema removal for #{ target_database }"
-  schema_commands.each do |cmnd|
-    puts `su - postgres -c "psql #{ target_database }_#{ environment } -c '#{ cmnd }'"`
+  next if target_database == ''
+
+  if mode =~ /postgresql/
+    puts "[#{ Time.now.strftime('%Y-%m-%d %l:%M:%S %P') }] Starting schema removal for #{ target_database }"
+    schema_commands.each do |cmnd|
+      puts `su - postgres -c "psql #{ target_database }_#{ environment } -c '#{ cmnd }'"`
+    end
   end
 
   (0..10).each do |tries|
-    puts "[#{ Time.now.strftime('%Y-%m-%d %l:%M:%S %P') }] Checking if #{ backup_location }/main_backup/#{ target_dir }/main_backup/databases/#{ gzipped_sql_file.gsub('.gz','') } exists..."
+    puts "[#{ Time.now.strftime('%Y-%m-%d %l:%M:%S %P') }] Checking if #{ backup_location }/main_backup/#{ target_dir }/main_backup/databases/#{ gzipped_file.gsub('.gz','') } exists..."
 
-    check = File.exist?("#{ backup_location }/main_backup/#{ target_dir }/main_backup/databases/#{ gzipped_sql_file.gsub('.gz','') }")
+    check = File.exist?("#{ backup_location }/main_backup/#{ target_dir }/main_backup/databases/#{ gzipped_file.gsub('.gz','') }")
 
-    puts "[#{ Time.now.strftime('%Y-%m-%d %l:%M:%S %P') }] Checking if #{ backup_location }/main_backup/#{ target_dir }/main_backup/databases/#{ gzipped_sql_file.gsub('.gz','') }'s state is #{ check }"
+    puts "[#{ Time.now.strftime('%Y-%m-%d %l:%M:%S %P') }] Checking if #{ backup_location }/main_backup/#{ target_dir }/main_backup/databases/#{ gzipped_file.gsub('.gz','') }'s state is #{ check }"
 
     break if check
 
@@ -74,11 +79,17 @@ Dir.foreach("#{ backup_location }/main_backup/#{ target_dir }/main_backup/databa
 
   puts "[#{ Time.now.strftime('%Y-%m-%d %l:%M:%S %P') }] Starting restore for #{ target_database }_#{ environment }"
 
-  `PGPASSWORD=#{ pg_pass } pg_restore --verbose --no-acl --no-owner -j 4 -h localhost -U #{ db_user } -d #{ target_database }_#{ environment } #{ backup_location }/main_backup/#{ target_dir }/main_backup/databases/#{ gzipped_sql_file.gsub('.gz','') }`   
+  case mode
+  when 'postgresql'
+    `PGPASSWORD=#{ db_pass } pg_restore --verbose --no-acl --no-owner -j 4 -h localhost -U #{ db_user } -d #{ target_database }_#{ environment } #{ backup_location }/main_backup/#{ target_dir }/main_backup/databases/#{ gzipped_file.gsub('.tar','') }`
 
-  puts "[#{ Time.now.strftime('%Y-%m-%d %l:%M:%S %P') }] Starting VACUUM ANALYZE for #{ target_database }"
-  puts `su - postgres -c "psql #{ target_database }_#{ environment } -c 'VACUUM VERBOSE ANALYZE;'"`
+    puts "[#{ Time.now.strftime('%Y-%m-%d %l:%M:%S %P') }] Starting VACUUM ANALYZE for #{ target_database }"
+    puts `su - postgres -c "psql #{ target_database }_#{ environment } -c 'VACUUM VERBOSE ANALYZE;'"`
+  when 'mongodb'
+    puts `tar -xvf #{ backup_location }/main_backup/#{ target_dir }/main_backup/databases/#{ gzipped_file } -C #{ backup_location }/main_backup/#{ target_dir }/main_backup/databases/#{ gzipped_file }`
 
+    puts `mongorestore --dbpath /mnt/mongo/mongodb --username #{ db_user } --password #{ db_pass } --db #{ target_database } --drop #{ backup_location }/main_backup/#{ target_dir }/main_backup/databases/#{ gzipped_file.gsub('.tar','') }/#{ target_database }`
+  end
 end
 
 `rm -rf #{ backup_location }/main_backup/#{ target_dir }/main_backup`
