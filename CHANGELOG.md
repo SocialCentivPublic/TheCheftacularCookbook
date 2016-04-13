@@ -1,3 +1,11 @@
+## 1.4.0
+
+* Finish up all logstash support and integrations.
+
+## 1.3.2
+
+* More Improvements to logstash recipes
+
 ## 1.3.1
 
 * Bunch of logstash installation recipes

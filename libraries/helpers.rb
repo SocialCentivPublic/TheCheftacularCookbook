@@ -90,10 +90,16 @@ module TheCheftacularCookbook
     end
 
     #TODO refactor to better solution
-    def database_master_to_hash
+    def database_master_to_hash(env='default')
+      env = node.chef_environment if env == 'default'
+
+      if env != 'default'
+        node.set['addresses'][env] = data_bag_item(env, 'addresses')['addresses']
+      end
+
       database_master_hash = {}
 
-      node['addresses'][node.chef_environment].each do |serv_hash|
+      node['addresses'][env].each do |serv_hash|
         next unless serv_hash['descriptor'].include?('dbmaster') 
 
         database_master_hash = serv_hash

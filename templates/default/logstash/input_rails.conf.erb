@@ -1,0 +1,22 @@
+input {
+  udp {
+    host => "0.0.0.0"
+    port => "<%= @logstash_input_port %>"
+    codec => json
+    type => "<%= @input_file_type %>"
+  }
+}
+
+filter {
+  mutate {
+    replace   => [ "input_chef_environment", "<%= @chef_environment %>" ]
+  }
+
+  if ([severity] =~ /DEBUG/) {
+    drop{}
+  }
+
+  geoip {
+    source => "clientip"
+  }
+}

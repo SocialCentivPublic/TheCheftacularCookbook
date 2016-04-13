@@ -241,7 +241,7 @@ def initialize_rails_application
 
     rails do
       bundle_command                  node['bundle_command']
-      environment_name                node['environment_name']
+      environment_name                app_hash['runtime_environment']
       bundler                         true
       bundle_options                  '--jobs 2' if app_hash['run_web']
       bundler_with_groups             ['test'] if app_hash['is_sensu_build']
@@ -279,12 +279,12 @@ def initialize_rails_application
   end
 
   #activate if cleanup becomes a problem
-  cron "cleanup_#{ new_resource.name }_#{ node['environment_name'] }.log" do
+  cron "cleanup_#{ new_resource.name }_#{ app_hash['runtime_environment'] }.log" do
     minute  "0"
     hour    "0"
     day     "1"
     user    node['cheftacular']['deploy_user']
-    command "tail -5000 #{ app_hash['current_path'] }/log/#{ node['environment_name'] }.log > #{ app_hash['current_path'] }/log/#{ node['environment_name'] }.log"
+    command "tail -5000 #{ app_hash['current_path'] }/log/#{ app_hash['runtime_environment'] }.log > #{ app_hash['current_path'] }/log/#{ app_hash['runtime_environment'] }.log"
   end if node[new_resource.name]['run_log_cleanup']
 
   execute 'restart_puma_rails_apps' do

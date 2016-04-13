@@ -81,7 +81,12 @@ simple_iptables_rule "mongodb_accept" do
 end if node['roles'].include?(role_maps['mongodb'])
 
 simple_iptables_rule "logstash_accept" do
-  rule ["-i eth1 --proto tcp --dport 9292",
+  rule ["-i eth1 --proto tcp --dport 5959",
+        "-i eth1 --proto tcp --dport 5960",
+        "-i eth1 --proto tcp --dport 5961",
+        "-i eth1 --proto tcp --dport 5962",
+        "-i eth1 --proto tcp --dport 5963",
+        "-i eth1 --proto tcp --dport 9292",
         "-i eth1 --proto tcp --dport 9200"]
   jump "ACCEPT"
 end if node['roles'].include?(role_maps['logstash_server'])
@@ -89,7 +94,9 @@ end if node['roles'].include?(role_maps['logstash_server'])
 simple_iptables_rule "logstash_agent_accept" do
   rule ["-i eth1 --proto tcp --dport 5959",
         "-i eth1 --proto tcp --dport 5960",
-        "-i eth1 --proto tcp --dport 5961"]
+        "-i eth1 --proto tcp --dport 5961",
+        "-i eth1 --proto tcp --dport 5962",
+        "-i eth1 --proto tcp --dport 5963"]
   jump "ACCEPT"
 end if node['roles'].include?(role_maps['logstash_client'])
 
@@ -124,7 +131,12 @@ simple_iptables_rule "mongodb_drop" do
 end if node['roles'].include?(role_maps['mongodb'])
 
 simple_iptables_rule "logstash_drop" do
-  rule ["-i eth0 --proto tcp --dport 9292",
+  rule ["-i eth1 --proto tcp --dport 5959",
+        "-i eth1 --proto tcp --dport 5960",
+        "-i eth1 --proto tcp --dport 5961",
+        "-i eth1 --proto tcp --dport 5962",
+        "-i eth1 --proto tcp --dport 5963",
+        "-i eth0 --proto tcp --dport 9292",
         "-i eth0 --proto tcp --dport 9200"]
   jump "DROP"
 end if node['roles'].include?(role_maps['logstash_server'])
@@ -132,7 +144,9 @@ end if node['roles'].include?(role_maps['logstash_server'])
 simple_iptables_rule "logstash_agent_drop" do
   rule ["-i eth0 --proto tcp --dport 5959",
         "-i eth0 --proto tcp --dport 5960",
-        "-i eth0 --proto tcp --dport 5961"]
+        "-i eth0 --proto tcp --dport 5961",
+        "-i eth1 --proto tcp --dport 5962",
+        "-i eth1 --proto tcp --dport 5963"]
   jump "DROP"
 end if node['roles'].include?(role_maps['logstash_client'])
 
