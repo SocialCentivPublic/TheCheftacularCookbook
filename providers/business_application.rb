@@ -159,7 +159,7 @@ def initialize_nodejs_application
     if node['cheftacular']['repositories'][new_resource.role_name]['sub_stack'] == 'meteor'
       execute 'build_operations_file_for_meteor' do
         cwd     app_hash["current_path"]
-        command "/usr/local/bin/meteor build --directory #{ ops_dir } && cd #{ ops_dir }/bundle/programs/server && npm install"
+        command "npm install && /usr/local/bin/meteor build --directory #{ ops_dir } && cd #{ ops_dir }/bundle/programs/server && npm install"
         not_if  { ::File.exists?("#{ ops_dir }/bundle/main.js") }
       end
 

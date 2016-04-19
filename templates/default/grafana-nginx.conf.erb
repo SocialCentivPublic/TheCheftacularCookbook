@@ -1,8 +1,22 @@
+<% if node['roles'].include?('https') -%>
 server {
-  listen                <%= @listen_address %>:<%= @listen_port %>;
+  listen         80;
+  server_name    <%= @server_name %>;
+  return         301 https://$host$request_uri;
+}
+<% end -%>
+
+server {
+  listen                <%= @listen_address %>:<%= @listen_port %><%= ' ssl' if node['roles'].include?('https') %>;
 
   server_name           <%= @server_name %> <%= @server_aliases.join(" ") %>;
   access_log            /var/log/nginx/<%= @server_name %>.access.log;
+<% if node['roles'].include?('https') -%>
+  ssl_certificate       <%= "/var/opt/nginx/certs/" + node.chef_environment %>.pem;
+  ssl_certificate_key   <%= "/var/opt/nginx/certs/" + node.chef_environment %>.key;
+  ssl_protocols         TLSv1.2;
+  ssl_ciphers           HIGH:!aNULL:!MD5;
+<% end -%>
 
   location / {
     root  <%= @grafana_dir %>;
@@ -21,42 +35,42 @@ server {
   }
 
   location ~ ^/_aliases$ {
-    proxy_pass <%= @es_scheme %><%= @es_server %>:<%= @es_port %>;
+    proxy_pass <%= node['grafana']['elasticsearch_protocol'] %><%= node['grafana']['elasticsearch_address'] %>:<%= node['grafana']['elasticsearch_port'] %>;
     proxy_read_timeout 90;
 <% unless @es_basic_auth.empty? -%>
     proxy_set_header Authorization "Basic <%= @es_basic_auth %>";
 <% end -%>
   }
   location ~ ^/_nodes$ {
-    proxy_pass <%= @es_scheme %><%= @es_server %>:<%= @es_port %>;
+    proxy_pass <%= node['grafana']['elasticsearch_protocol'] %><%= node['grafana']['elasticsearch_address'] %>:<%= node['grafana']['elasticsearch_port'] %>;
     proxy_read_timeout 90;
 <% unless @es_basic_auth.empty? -%>
     proxy_set_header Authorization "Basic <%= @es_basic_auth %>";
 <% end -%>
   }
   location ~ ^/.*/_search$ {
-    proxy_pass <%= @es_scheme %><%= @es_server %>:<%= @es_port %>;
+    proxy_pass <%= node['grafana']['elasticsearch_protocol'] %><%= node['grafana']['elasticsearch_address'] %>:<%= node['grafana']['elasticsearch_port'] %>;
     proxy_read_timeout 90;
 <% unless @es_basic_auth.empty? -%>
     proxy_set_header Authorization "Basic <%= @es_basic_auth %>";
 <% end -%>
   }
   location ~ ^/.*/_mapping$ {
-    proxy_pass <%= @es_scheme %><%= @es_server %>:<%= @es_port %>;
+    proxy_pass <%= node['grafana']['elasticsearch_protocol'] %><%= node['grafana']['elasticsearch_address'] %>:<%= node['grafana']['elasticsearch_port'] %>;
     proxy_read_timeout 90;
 <% unless @es_basic_auth.empty? -%>
     proxy_set_header Authorization "Basic <%= @es_basic_auth %>";
 <% end -%>
   }
   location ~ ^/<%= node['grafana']['grafana_index'] %>/dashboard/.*$ {
-    proxy_pass <%= @es_scheme %><%= @es_server %>:<%= @es_port %>;
+    proxy_pass <%= node['grafana']['elasticsearch_protocol'] %><%= node['grafana']['elasticsearch_address'] %>:<%= node['grafana']['elasticsearch_port'] %>;
     proxy_read_timeout 90;
 <% unless @es_basic_auth.empty? -%>
     proxy_set_header Authorization "Basic <%= @es_basic_auth %>";
 <% end -%>
   }
   location ~ ^/<%= node['grafana']['grafana_index'] %>/temp.*$ {
-    proxy_pass <%= @es_scheme %><%= @es_server %>:<%= @es_port %>;
+    proxy_pass <%= node['grafana']['elasticsearch_protocol'] %><%= node['grafana']['elasticsearch_address'] %>:<%= node['grafana']['elasticsearch_port'] %>;
     proxy_read_timeout 90;
 <% unless @es_basic_auth.empty? -%>
     proxy_set_header Authorization "Basic <%= @es_basic_auth %>";
