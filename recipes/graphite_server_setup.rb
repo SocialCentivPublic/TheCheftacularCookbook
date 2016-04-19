@@ -136,12 +136,17 @@ end
 node.set['grafana']['admin_password']    = Chef::EncryptedDataBagItem.load( node.chef_environment, 'chef_passwords', node['secret'])["graphite_pass"]
 node.set['grafana']['graphite_server']   = '127.0.0.1'
 node.set['grafana']['graphite_port']     = 8080
+node.set['grafana']['webserver_hostname']= "graphite.#{ data_bag_item('production', 'config').to_hash['production']['tld'] }"
 node.set['grafana']['graphite_user']     = 'graphite'
 node.set['grafana']['graphite_password'] = node['grafana']['admin_password']
 node.set['grafana']['user']              = 'graphite'
 node.set['grafana']['webserver_listen']  = node['ipaddress']
 node.set['grafana']['webserver_port']    = node['roles'].include?('https') ? 443        : 80
 node.set['grafana']['webserver_scheme']  = node['roles'].include?('https') ? 'https://' : 'http://'
+
+node.set['grafana']['elasticsearch_protocol'] = 'http://'
+node.set['grafana']['elasticsearch_address']  = "local.graphite.#{ data_bag_item('production', 'config').to_hash['production']['tld'] }"
+node.set['grafana']['elasticsearch_port']     = 9200
 
 node.set['grafana']['nginx']['template_cookbook'] = 'TheCheftacularCookbook'
 

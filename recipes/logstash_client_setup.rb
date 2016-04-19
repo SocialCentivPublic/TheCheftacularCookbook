@@ -8,8 +8,10 @@ agent_hash          = {}
 
 node['TheCheftacularCookbook']['logstash']['agent_role_maps'].each_pair do |role_name, role_hash|
   next if !node['roles'].include?(role_name) && role_name != 'default'
+  next if role_hash.has_key?('not_on_role') && node['roles'].include?(role_hash['not_on_role'])
 
   role_hash.each_pair do |agent_collector_name, agent_collector_hash|
+    next if agent_collector_name =~ /not_on_role/
 
     agent_hash[agent_collector_name] = {
       'name'      => agent_collector_name,

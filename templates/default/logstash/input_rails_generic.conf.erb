@@ -16,7 +16,7 @@ filter {
     drop{}
   }
 
-  geoip {
-    source => "clientip"
+  if !([severity]) {
+    drop{}
   }
 }

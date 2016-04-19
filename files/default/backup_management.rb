@@ -86,7 +86,10 @@ Dir.foreach("#{ backup_location }/main_backup/#{ target_dir }/main_backup/databa
     puts "[#{ Time.now.strftime('%Y-%m-%d %l:%M:%S %P') }] Starting VACUUM ANALYZE for #{ target_database }"
     puts `su - postgres -c "psql #{ target_database }_#{ environment } -c 'VACUUM VERBOSE ANALYZE;'"`
   when 'mongodb'
-    puts `tar -xvf #{ backup_location }/main_backup/#{ target_dir }/main_backup/databases/#{ gzipped_file } -C #{ backup_location }/main_backup/#{ target_dir }/main_backup/databases/#{ gzipped_file }`
+    puts "Unpacking #{ backup_location }/main_backup/#{ target_dir }/main_backup/databases/#{ gzipped_file }"
+    puts `tar -xvf #{ backup_location }/main_backup/#{ target_dir }/main_backup/databases/#{ gzipped_file } -C #{ backup_location }/main_backup/#{ target_dir }/main_backup/databases`
+
+    puts "Restoring #{ backup_location }/main_backup/#{ target_dir }/main_backup/databases/#{ gzipped_file.gsub('.tar','') }/#{ target_database }"
 
     puts `mongorestore --dbpath /mnt/mongo/mongodb --username #{ db_user } --password #{ db_pass } --db #{ target_database } --drop #{ backup_location }/main_backup/#{ target_dir }/main_backup/databases/#{ gzipped_file.gsub('.tar','') }/#{ target_database }`
   end

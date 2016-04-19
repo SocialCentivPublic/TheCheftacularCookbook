@@ -8,7 +8,7 @@ directory "/var/opt/nginx/certs" do
   recursive true
 end
 
-cookbook_file "/var/opt/nginx/certs/#{ node.chef_environment }.crt" do
+cookbook_file "/var/opt/nginx/certs/#{ node.chef_environment }.pem" do
   source   node['TheCheftacularCookbook']['nginx']['ssl']['ssl_crt_file_name'].gsub('ENVIRONMENT', node.chef_environment)
   owner    'root'
   group    'root'

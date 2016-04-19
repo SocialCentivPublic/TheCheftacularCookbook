@@ -1,3 +1,11 @@
+## 1.4.1
+
+* Major fixes for elasticsearch cookbook update affecting grafana cookbook
+
+* Fix to backup_management.rb for mongodb database restoring
+
+* More additions to logstash cookbook and integrations
+
 ## 1.4.0
 
 * Finish up all logstash support and integrations.

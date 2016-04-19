@@ -18,7 +18,10 @@ filter {
     mutate {
       add_field => { "true_host" => "<%= @true_hostname %>" }
     }
-    if ([program] =~ /delayed\-job\-misc|delayed\-job\-tweets/) {
+    if ([program] =~ /delayed\-job\-misc|delayed\-job\-tweets|power\-track\-stream/) {
+      drop{}
+    }
+    if ([message] =~ /sensu : TTY=unknown.*/) {
       drop{}
     }
     syslog_pri { }

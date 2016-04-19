@@ -82,6 +82,7 @@ file_plugin_arr.each do |plugin_hash|
   sudo_commands << "/etc/sensu/plugins/#{ plugin_hash[:name] }"
 end
 
+sudo_commands << "/usr/bin/sv"
 sudo_commands << "/etc/sensu/handlers/chef_node.rb"
 sudo_commands << "/etc/sensu/handlers/logevent.rb"
 sudo_commands << "/usr/sbin/service"

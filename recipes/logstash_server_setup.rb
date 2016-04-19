@@ -22,6 +22,7 @@ end
 node.set['elkstack']['config']['custom_logstash'] = base_config_hash
 node.set['elkstack']['config']['custom_logstash']['name'] = server_config_name_array
 node.set['kibana']['server_name'] = "logs.#{ data_bag_item('production', 'config').to_hash['production']['tld'] }"
+
 include_recipe "java"
 include_recipe "elkstack"
 
