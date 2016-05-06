@@ -12,6 +12,8 @@ if node['setup_sensu_gems'].nil? || (node['TheCheftacularCookbook']['sensu'].has
 end
 
 if node['roles'].include?('sensu_server')
+  execute "sudo /opt/sensu/embedded/bin/gem install chef -v 12.2.1" # TODO chef requires > 2.0.0 after this version (need to update sensu)
+
   execute "sudo /opt/sensu/embedded/bin/gem install cheftacular"
 end
 

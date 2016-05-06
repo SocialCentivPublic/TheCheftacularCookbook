@@ -18,6 +18,7 @@ module TheCheftacularCookbook
     #TODO REFACTOR FIND BETTER SOLUTION THAT CHECKS CHEF ENVIRONMENTS
     def scrub_chef_environments_from_string string
       envs = [
+        "devremote",
         "devstaging",
         "datastaging",
         "staging",
