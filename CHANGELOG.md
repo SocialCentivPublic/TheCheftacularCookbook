@@ -1,3 +1,7 @@
+## 1.4.3
+
+* Minor fixes to sensu recipes
+
 ## 1.4.1
 
 * Major fixes for elasticsearch cookbook update affecting grafana cookbook

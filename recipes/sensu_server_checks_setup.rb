@@ -55,7 +55,7 @@ sensu_check "check-entropy" do
 end
 
 sensu_check "check-fs-writable" do
-  command     "check-fs-writable.rb -d /etc/sensu"
+  command     "sudo /etc/sensu/plugins/check-fs-writable.rb -d /etc/sensu"
   handlers    infrastructure_handlers
   subscribers ["all"]
   interval    60
@@ -144,7 +144,7 @@ sensu_check "logstash_agent_light_remediation" do
 end
 
 sensu_check "logstash_agent_medium_remediation" do
-  command     "sudo /usr/bin/chef-client"
+  command     "ls"#"sudo /usr/bin/chef-client" #attempt to fix with a chef-client run
   subscribers []
   handlers    ["show"] + infrastructure_handlers
   publish     false
