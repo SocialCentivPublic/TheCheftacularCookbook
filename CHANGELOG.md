@@ -1,3 +1,7 @@
+## 1.4.4
+
+* Bump uchiwa version and fix sensu gem installation regarding that bump
+
 ## 1.4.3
 
 * Minor fixes to sensu recipes
