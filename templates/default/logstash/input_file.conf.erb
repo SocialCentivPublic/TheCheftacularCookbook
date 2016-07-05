@@ -2,6 +2,7 @@ input {
   file {
     path => ["<%= @input_file_name %>"]
     type => ["<%= @input_file_type %>"]
+    sincedb_path => "/var/lib/logstash/<%= @input_file_type %>"
   }
 }
 

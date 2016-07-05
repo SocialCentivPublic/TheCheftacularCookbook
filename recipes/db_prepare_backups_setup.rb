@@ -10,9 +10,11 @@ end
 
 backup_nodes, store_with_string, db_string, slack_string, long_term_backup_nodes = [], '', '', '', []
 
-search(:node, "receive_backups:*") do |n|
-  backup_nodes << address_hash_from_node_name(scrub_chef_environments_from_string(n['hostname'])) if n['receive_backups']
+search(:node, "receive_storage_backups:true") do |n|
+  backup_nodes << address_hash_from_node_name(scrub_chef_environments_from_string(n['hostname'])) if n['receive_storage_backups']
 end
+
+Chef::Log.info("TESTING IN BACKUPS::#{ backup_nodes }")
 
 search(:node, "receive_long_term_backups:*") do |n|
   backup_env = node['cheftacular']['backup_config']['global_backup_environ']

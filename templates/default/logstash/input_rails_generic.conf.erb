@@ -12,7 +12,7 @@ filter {
     replace   => [ "input_chef_environment", "<%= @chef_environment %>" ]
   }
 
-  if ([severity] =~ /DEBUG/) {
+  if ([severity] =~ /DEBUG|INFO/) {
     drop{}
   }
 

@@ -55,7 +55,7 @@ sensu_check "check-entropy" do
 end
 
 sensu_check "check-fs-writable" do
-  command     "check-fs-writable.rb -d /etc/sensu"
+  command     "sudo /etc/sensu/plugins/check-fs-writable.rb -d /etc/sensu"
   handlers    infrastructure_handlers
   subscribers ["all"]
   interval    60
@@ -75,7 +75,7 @@ sensu_check "check-swap-percentage" do
   interval    60
 end
 
-sensu_check "logstash-agent-check" do
+sensu_check "logstash-agent-check-udp-dead" do
   command     "sudo /opt/sensu/embedded/bin/ruby /etc/sensu/plugins/check-tail.rb -f /opt/logstash/agent/log/logstash.log -P \"UDP listener died\" -l 1"
   handlers    infrastructure_handlers + ['remediator']
   subscribers [node['TheCheftacularCookbook']['sensu']['role_maps']['logstash_client']]
@@ -85,6 +85,50 @@ sensu_check "logstash-agent-check" do
       "logstash_agent_light_remediation" => {
         occurrences: [2,4,6,10,20,40,80,160,320,500,1000],
         severities:  [2]
+      },
+      "logstash_agent_medium_remediation" => {
+        occurrences: [50, 100, 200, 400, 800],
+        severities:  [2]
+      }
+    },
+    occurrences: ["2+"]
+  )
+end
+
+sensu_check "logstash-agent-check-write" do
+  command     "sudo /opt/sensu/embedded/bin/ruby /etc/sensu/plugins/check-tail.rb -f /opt/logstash/agent/log/logstash.log -P \"Client write error, trying connect\" -l 1"
+  handlers    infrastructure_handlers + ['remediator']
+  subscribers [node['TheCheftacularCookbook']['sensu']['role_maps']['logstash_client']]
+  interval    60
+  additional(
+    remediation: {
+      "logstash_agent_light_remediation" => {
+        occurrences: [2,4,6,10,20,40,80,160,320,500,1000],
+        severities:  [2]
+      },
+      "logstash_agent_medium_remediation" => {
+        occurrences: [50, 100, 200, 400, 800],
+        severities:  [2]
+      }
+    },
+    occurrences: ["2+"]
+  )
+end
+
+sensu_check "logstash-agent-permission-denied-nginx" do
+  command     "sudo /opt/sensu/embedded/bin/ruby /etc/sensu/plugins/check-tail.rb -f /opt/logstash/agent/log/logstash.log -P \"Permission denied - /var/log/nginx/\" -l 2"
+  handlers    infrastructure_handlers + ['remediator']
+  subscribers [node['TheCheftacularCookbook']['sensu']['role_maps']['logstash_client']]
+  interval    60
+  additional(
+    remediation: {
+      "logstash_agent_light_remediation" => {
+        occurrences: [2,4,6,10,20,40,80,160,320,500,1000],
+        severities:  [2]
+      },
+      "logstash_agent_medium_remediation" => {
+        occurrences: [50, 100, 200, 400, 800],
+        severities:  [2]
       }
     },
     occurrences: ["2+"]
@@ -92,7 +136,15 @@ sensu_check "logstash-agent-check" do
 end
 
 sensu_check "logstash_agent_light_remediation" do
-  command     "sudo sv logstash_agent stop && sudo sv logstash_agent start"
+  command     "sudo /usr/bin/sv stop logstash_agent && sleep 2 && sudo /usr/bin/sv start logstash_agent"
+  subscribers []
+  handlers    ["show"] + infrastructure_handlers
+  publish     false
+  interval    600
+end
+
+sensu_check "logstash_agent_medium_remediation" do
+  command     "ls"#"sudo /usr/bin/chef-client" #attempt to fix with a chef-client run
   subscribers []
   handlers    ["show"] + infrastructure_handlers
   publish     false
