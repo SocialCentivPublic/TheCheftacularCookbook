@@ -115,10 +115,11 @@ simple_iptables_rule "graphite_drop" do
   jump "DROP"
 end if node['roles'].include?(role_maps['graphite_server'])
 
-simple_iptables_rule "postgres_drop" do
-  rule [ "-i eth0 --proto tcp --dport 5432" ]
-  jump "DROP"
-end if node['roles'].include?(role_maps['database'])
+# Commented out for migration to AWS RDS instances
+#simple_iptables_rule "postgres_drop" do
+#  rule [ "-i eth0 --proto tcp --dport 5432" ]
+#  jump "DROP"
+#end if node['roles'].include?(role_maps['database'])
 
 simple_iptables_rule "graylog2_drop" do
   rule [ "-i eth0 --proto tcp --dport 12900" ]
